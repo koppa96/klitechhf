@@ -1,0 +1,34 @@
+﻿<Page
+    x:Class="KlitechProba.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:KlitechProba"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <RelativePanel>
+        <TextBlock x:Name="UsernameTextBox" 
+                   Text="Username"
+                   RelativePanel.Above="EmailTextBox"
+                   RelativePanel.AlignLeftWith="EmailTextBox"></TextBlock>
+
+        <TextBlock x:Name="EmailTextBox" 
+                   Text="Email"
+                   RelativePanel.Above="LoginButton"
+                   RelativePanel.AlignLeftWith="LoginButton"></TextBlock>
+
+        <Button Content="Click here to log in"
+                x:Name="LoginButton"
+                Click="GetAccessTokenAsync"
+                RelativePanel.AlignHorizontalCenterWithPanel="True"
+                RelativePanel.AlignVerticalCenterWithPanel="True"></Button>
+
+        <Button Content="Click here to refresh tokens"
+                x:Name="RefreshButton"
+                Click="RefreshButton_OnClick"
+                RelativePanel.Below="LoginButton"
+                RelativePanel.AlignHorizontalCenterWith="LoginButton"></Button>
+    </RelativePanel>
+</Page>
