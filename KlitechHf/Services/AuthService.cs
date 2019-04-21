@@ -105,7 +105,7 @@ namespace KlitechHf.Services
                     new KeyValuePair<string, string>("grant_type", "authorization_code")
                 });
 
-                var result = await Task.Run(() => client.PostAsync(AuthService.TokenEndpoint, content));
+                var result = await Task.Run(() => client.PostAsync(TokenEndpoint, content));
                 if (result.IsSuccessStatusCode)
                 {
                     var json = await result.Content.ReadAsStringAsync();

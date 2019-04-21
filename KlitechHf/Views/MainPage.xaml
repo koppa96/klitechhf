@@ -9,9 +9,11 @@
     xmlns:prism="using:Prism.Windows.Mvvm"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
+    d:DataContext="{d:DesignInstance vm:MainPageViewModel}">
 
     <RelativePanel>
+
         <Button Content="TestLoginAsync"
                 x:Name="LoginAsyncButton"
                 Command="{Binding LoginCommand}"
@@ -22,5 +24,6 @@
         <Button Content="RandomButton"
                 RelativePanel.Below="LoginAsyncButton"
                 RelativePanel.AlignHorizontalCenterWith="LoginAsyncButton"/>
+
     </RelativePanel>
 </Page>

@@ -14,39 +14,9 @@ namespace KlitechHf.Views
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private static string[] scopes = { "offline_access", "User.Read", "Files.ReadWrite.All" };
-
         public MainPage()
         {
             this.InitializeComponent();
-        }
-
-        private async void GetAccessTokenAsync(object sender, RoutedEventArgs e)
-        {
-            var authService = AuthService.Instance;
-            await authService.ShowLoginDialogAsync();
-        }
-
-        public async void ShowLoginDialog(object sender, RoutedEventArgs e)
-        {
-            var loginDialog = new LoginDialog();
-
-            /*
-            loginDialog.Measure(new Size(400, 600));
-            loginDialog.Arrange(new Rect(new Point(100, 100), new Size(400, 600)));
-            loginDialog.UpdateLayout();*/
-
-            await loginDialog.ShowAsync();
-        }
-
-        private async void RefreshButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            await AuthService.Instance.RefreshTokensAsync();
-        }
-
-        private async void LoginAsyncButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            await AuthService.Instance.LoginAsync();
         }
     }
 }
