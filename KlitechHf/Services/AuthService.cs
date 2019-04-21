@@ -83,7 +83,7 @@ namespace KlitechHf.Services
                     new KeyValuePair<string, string>("grant_type", "refresh_token")
                 });
 
-                var result = await client.PostAsync(TokenEndpoint, content);
+                var result = await Task.Run(() => client.PostAsync(TokenEndpoint, content));
                 if (result.IsSuccessStatusCode)
                 {
                     var json = await result.Content.ReadAsStringAsync();
@@ -105,7 +105,7 @@ namespace KlitechHf.Services
                     new KeyValuePair<string, string>("grant_type", "authorization_code")
                 });
 
-                var result = await client.PostAsync(TokenEndpoint, content);
+                var result = await Task.Run(() => client.PostAsync(AuthService.TokenEndpoint, content));
                 if (result.IsSuccessStatusCode)
                 {
                     var json = await result.Content.ReadAsStringAsync();
@@ -132,7 +132,7 @@ namespace KlitechHf.Services
                 var request = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
 
-                var response = await client.SendAsync(request);
+                var response = await Task.Run(() => client.SendAsync(request));
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
