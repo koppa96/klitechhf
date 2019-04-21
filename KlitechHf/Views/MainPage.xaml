@@ -21,9 +21,15 @@
                 RelativePanel.AlignHorizontalCenterWithPanel="True"
                 RelativePanel.AlignVerticalCenterWithPanel="True"/>
 
+        <Button Content="Logout"
+                x:Name="LogoutButton"
+                Command="{Binding LogoutCommand}"
+                RelativePanel.AlignHorizontalCenterWith="LoginAsyncButton"
+                RelativePanel.Below="LoginAsyncButton"/>
+
         <Button Content="RandomButton"
-                RelativePanel.Below="LoginAsyncButton"
-                RelativePanel.AlignHorizontalCenterWith="LoginAsyncButton"/>
+                RelativePanel.Below="LogoutButton"
+                RelativePanel.AlignHorizontalCenterWith="LogoutButton"/>
 
     </RelativePanel>
 </Page>

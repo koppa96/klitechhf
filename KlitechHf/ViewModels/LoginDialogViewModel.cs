@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml;
+﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Flurl;
 using KlitechHf.Interfaces;
@@ -10,7 +11,8 @@ namespace KlitechHf.ViewModels
     public class LoginDialogViewModel : ViewModelBase
     {
         private readonly string _callbackUrl, _clientId, _baseUrl, _scopes;
-        private ILoginDialog _dialog;
+
+        public event Action<string> LoginComplete;  
 
         public DelegateCommand<WebView> CheckUriCommand { get; }
 
@@ -26,8 +28,6 @@ namespace KlitechHf.ViewModels
 
         public void Initialize(ILoginDialog dialog)
         {
-            _dialog = dialog;
-
             var url = new Url(_baseUrl)
                 .SetQueryParams(new
                 {
@@ -37,17 +37,16 @@ namespace KlitechHf.ViewModels
                     redirect_uri = _callbackUrl
                 });
 
-            _dialog.NavigateWebView(url.ToUri());
+            dialog.NavigateWebView(url.ToUri());
         }
 
-        public void OnWebViewNavigation(WebView webView)
+        public void OnWebViewNavigation(WebView view)
         {
-            var url = new Url(webView.Source.ToString());
+            var url = new Url(view.Source.ToString());
             if (url.Path == _callbackUrl)
             {
                 var authCode = url.QueryParams["code"].ToString();
-                _dialog.InvokeLoginComplete(authCode);
-                _dialog.Hide();
+                LoginComplete?.Invoke(authCode);
             }
         }
     }

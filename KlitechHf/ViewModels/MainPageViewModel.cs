@@ -21,11 +21,18 @@ namespace KlitechHf.ViewModels
         }
 
         public ICommand LoginCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         public MainPageViewModel()
         {
             LoginCommand = new DelegateCommand(LoginAsync);
+            LogoutCommand = new DelegateCommand(Logout);
             LoginButtonEnabled = true;
+        }
+
+        private void Logout()
+        {
+            AuthService.Instance.Logout();
         }
 
         private async void LoginAsync()

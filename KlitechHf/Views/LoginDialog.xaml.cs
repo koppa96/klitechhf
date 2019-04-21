@@ -18,17 +18,19 @@ namespace KlitechHf.Views
             if (DataContext is LoginDialogViewModel viewModel)
             {
                 viewModel.Initialize(this);
+                viewModel.LoginComplete += OnLoginComplete;
             }
+        }
+
+        private void OnLoginComplete(string authCode)
+        {
+            LoginComplete?.Invoke(authCode);
+            Hide();
         }
 
         public void NavigateWebView(Uri uri)
         {
             LoginWebView.Navigate(uri);
-        }
-
-        public void InvokeLoginComplete(string authCode)
-        {
-            LoginComplete?.Invoke(authCode);
         }
     }
 }
