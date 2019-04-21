@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using KlitechHf.Services;
+using Prism.Windows.Mvvm;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -40,6 +42,11 @@ namespace KlitechHf.Views
         private async void RefreshButton_OnClick(object sender, RoutedEventArgs e)
         {
             await AuthService.Instance.RefreshTokensAsync();
+        }
+
+        private async void LoginAsyncButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            await AuthService.Instance.LoginAsync();
         }
     }
 }

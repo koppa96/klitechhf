@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Windows.UI.Xaml;
+using KlitechHf.Model;
 using KlitechHf.Views;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace KlitechHf.Services
@@ -12,16 +16,46 @@ namespace KlitechHf.Services
     {
         private const string TokenEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
-        private string refreshToken;
-        private readonly string clientId, callbackUrl;
+        private string _refreshToken;
+        private readonly string _clientId, _callbackUrl;
+        private readonly ApplicationDataContainer _container;
 
         public static AuthService Instance { get; } = new AuthService();
         public string AccessToken { get; set; }
+        public User CurrentUser { get; private set; }
 
         protected AuthService()
         {
-            clientId = Application.Current.Resources["ClientId"].ToString();
-            callbackUrl = Application.Current.Resources["RedirectUrl"].ToString();
+            _clientId = Application.Current.Resources["ClientId"].ToString();
+            _callbackUrl = Application.Current.Resources["RedirectUrl"].ToString();
+
+            _container = ApplicationData.Current.LocalSettings;
+            _refreshToken = _container.Values["refresh_token"]?.ToString();
+        }
+
+        public async Task LoginAsync()
+        {
+            if (_refreshToken != null)
+            {
+                await RefreshTokensAsync();
+
+                if (AccessToken == null)
+                {
+                    await ShowLoginDialogAsync();
+                }
+            }
+            else
+            {
+                await ShowLoginDialogAsync();
+            }
+        }
+
+        public void Logout()
+        {
+            CurrentUser = null;
+            AccessToken = null;
+            _refreshToken = null;
+            _container.Values["refresh_token"] = null;
         }
 
         public async Task ShowLoginDialogAsync()
@@ -34,7 +68,7 @@ namespace KlitechHf.Services
 
         public async Task RefreshTokensAsync()
         {
-            if (refreshToken == null)
+            if (_refreshToken == null)
             {
                 throw new InvalidOperationException("There is no refresh token to use.");
             }
@@ -43,9 +77,9 @@ namespace KlitechHf.Services
             {
                 var content = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("client_id", clientId),
-                    new KeyValuePair<string, string>("redirect_uri", callbackUrl),
-                    new KeyValuePair<string, string>("refresh_token", refreshToken),
+                    new KeyValuePair<string, string>("client_id", _clientId),
+                    new KeyValuePair<string, string>("redirect_uri", _callbackUrl),
+                    new KeyValuePair<string, string>("refresh_token", _refreshToken),
                     new KeyValuePair<string, string>("grant_type", "refresh_token")
                 });
 
@@ -54,6 +88,7 @@ namespace KlitechHf.Services
                 {
                     var json = await result.Content.ReadAsStringAsync();
                     ParseTokenResponse(json);
+                    await GetUserInfoAsync();
                 }
             }
         }
@@ -64,8 +99,8 @@ namespace KlitechHf.Services
             {
                 var content = new FormUrlEncodedContent(new []
                 {
-                    new KeyValuePair<string, string>("client_id", clientId), 
-                    new KeyValuePair<string, string>("redirect_uri", callbackUrl), 
+                    new KeyValuePair<string, string>("client_id", _clientId), 
+                    new KeyValuePair<string, string>("redirect_uri", _callbackUrl), 
                     new KeyValuePair<string, string>("code", authCode),
                     new KeyValuePair<string, string>("grant_type", "authorization_code")
                 });
@@ -75,6 +110,7 @@ namespace KlitechHf.Services
                 {
                     var json = await result.Content.ReadAsStringAsync();
                     ParseTokenResponse(json);
+                    await GetUserInfoAsync();
                 }
             }
         }
@@ -84,7 +120,25 @@ namespace KlitechHf.Services
             var tokens = JObject.Parse(response);
 
             AccessToken = tokens["access_token"].ToString();
-            refreshToken = tokens["refresh_token"].ToString();
+            _refreshToken = tokens["refresh_token"].ToString();
+
+            _container.Values["refresh_token"] = _refreshToken;
+        }
+
+        private async Task GetUserInfoAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+
+                var response = await client.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    CurrentUser = JsonConvert.DeserializeObject<User>(json);
+                }
+            }
         }
     }
 }

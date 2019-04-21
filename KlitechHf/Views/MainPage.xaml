@@ -30,5 +30,10 @@
                 Click="RefreshButton_OnClick"
                 RelativePanel.Below="LoginButton"
                 RelativePanel.AlignHorizontalCenterWith="LoginButton"></Button>
+        <Button Content="TestLoginAsync"
+                x:Name="LoginAsyncButton"
+                Click="LoginAsyncButton_OnClick"
+                RelativePanel.Below="RefreshButton"
+                RelativePanel.AlignHorizontalCenterWith="RefreshButton"></Button>
     </RelativePanel>
 </Page>
