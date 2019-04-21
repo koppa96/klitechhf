@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Controls;
-using Flurl;
-using KlitechProba.Interfaces;
-using KlitechProba.ViewModels;
+using KlitechHf.Interfaces;
+using KlitechHf.ViewModels;
 
 // The Content Dialog item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace KlitechProba.Views
+namespace KlitechHf.Views
 {
     public sealed partial class LoginDialog : ContentDialog, ILoginDialog
     {
@@ -16,7 +15,10 @@ namespace KlitechProba.Views
         public LoginDialog()
         {
             this.InitializeComponent();
-            this.DataContext = new LoginViewModel(this);
+            if (DataContext is LoginDialogViewModel viewModel)
+            {
+                viewModel.Initialize(this);
+            }
         }
 
         public void NavigateWebView(Uri uri)

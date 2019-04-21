@@ -1,5 +1,5 @@
 ﻿<ContentDialog
-    x:Class="KlitechProba.Views.LoginDialog"
+    x:Class="KlitechHf.Views.LoginDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:KlitechProba"
@@ -7,6 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:i="using:Microsoft.Xaml.Interactivity"
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:prism="using:Prism.Windows.Mvvm"
+    prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d">
 
     <WebView x:Name="LoginWebView"

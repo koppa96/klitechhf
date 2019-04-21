@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
-using KlitechProba.Views;
+using KlitechHf.Views;
 using Newtonsoft.Json.Linq;
 
-namespace KlitechProba.Services
+namespace KlitechHf.Services
 {
     public class AuthService
     {
