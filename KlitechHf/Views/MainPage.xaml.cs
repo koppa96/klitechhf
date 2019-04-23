@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using KlitechHf.Services;
+using OneDriveServices.Drive.Model;
 using Prism.Windows.Mvvm;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -17,6 +17,16 @@ namespace KlitechHf.Views
         public MainPage()
         {
             this.InitializeComponent();
+        }
+
+        private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            var folder = new DriveFolder
+            {
+                Id = "147EF121E9508B5!3349"
+            };
+
+            var items = await folder.GetChildrenAsync();
         }
     }
 }

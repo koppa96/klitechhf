@@ -27,7 +27,8 @@
                 RelativePanel.AlignHorizontalCenterWith="LoginAsyncButton"
                 RelativePanel.Below="LoginAsyncButton"/>
 
-        <Button Content="RandomButton"
+        <Button Content="ListChildrenTest"
+                Click="ButtonBase_OnClick"
                 RelativePanel.Below="LogoutButton"
                 RelativePanel.AlignHorizontalCenterWith="LogoutButton"/>
 
