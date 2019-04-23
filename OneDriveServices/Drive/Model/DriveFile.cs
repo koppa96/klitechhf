@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Flurl;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 
 namespace OneDriveServices.Drive.Model
@@ -28,6 +30,13 @@ namespace OneDriveServices.Drive.Model
 
                 throw new InvalidOperationException();
             }
+        }
+
+        protected override void Update(string json)
+        {
+            var obj = JsonConvert.DeserializeObject<DriveFile>(json);
+            UpdateCommonData(obj);
+            Size = obj.Size;
         }
     }
 }

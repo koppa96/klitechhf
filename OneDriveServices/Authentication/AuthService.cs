@@ -117,7 +117,7 @@ namespace OneDriveServices.Authentication
                     var json = await result.Content.ReadAsStringAsync();
                     ParseTokenResponse(json);
                     await GetUserInfoAsync();
-                }
+                } 
             }
         }
 

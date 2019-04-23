@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Flurl;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 
@@ -11,6 +13,9 @@ namespace OneDriveServices.Drive.Model
 {
     public class DriveFolder : DriveItem
     {
+        [JsonProperty("folder/childCount")]
+        public int ChildCount { get; set; }
+
         public async Task<List<DriveItem>> GetChildrenAsync()
         {
             using (var client = new HttpClient())
@@ -28,17 +33,19 @@ namespace OneDriveServices.Drive.Model
                     var result = JObject.Parse(json);
 
                     var children = result["value"];
-                    return children.Select(c =>
-                        c["folder"] == null ? c.ToObject<DriveFile>() as DriveItem 
+                    return children.Select(c => c["folder"] == null ? c.ToObject<DriveFile>() as DriveItem 
                             : c.ToObject<DriveFolder>() as DriveItem).ToList();
                 }
-                else
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                }
-            }
 
-            throw new NotImplementedException();
+                throw new WebException(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        protected override void Update(string json)
+        {
+            var obj = JsonConvert.DeserializeObject<DriveFolder>(json);
+            UpdateCommonData(obj);
+            ChildCount = obj.ChildCount;
         }
     }
 }
