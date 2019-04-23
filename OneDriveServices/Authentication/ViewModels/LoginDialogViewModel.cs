@@ -2,11 +2,11 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Flurl;
-using KlitechHf.Interfaces;
+using OneDriveServices.Authentication.Views;
 using Prism.Commands;
 using Prism.Windows.Mvvm;
 
-namespace KlitechHf.ViewModels
+namespace OneDriveServices.Authentication.ViewModels
 {
     public class LoginDialogViewModel : ViewModelBase
     {

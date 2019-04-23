@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KlitechHf.Interfaces
+namespace OneDriveServices.Authentication.Views
 {
     public interface ILoginDialog
     {

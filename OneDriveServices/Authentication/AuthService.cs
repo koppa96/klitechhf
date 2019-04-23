@@ -5,12 +5,12 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI.Xaml;
-using KlitechHf.Model;
-using KlitechHf.Views;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OneDriveServices.Authentication.Model;
+using OneDriveServices.Authentication.Views;
 
-namespace KlitechHf.Services
+namespace OneDriveServices.Authentication
 {
     public class AuthService
     {
@@ -22,6 +22,7 @@ namespace KlitechHf.Services
 
         public static AuthService Instance { get; } = new AuthService();
         public string AccessToken { get; set; }
+        public string Scheme { get; set; }
         public User CurrentUser { get; private set; }
 
         protected AuthService()
@@ -56,6 +57,11 @@ namespace KlitechHf.Services
             AccessToken = null;
             _refreshToken = null;
             _container.Values["refresh_token"] = null;
+        }
+
+        public AuthenticationHeaderValue CreateAuthenticationHeader()
+        {
+            return new AuthenticationHeaderValue(Scheme, AccessToken);
         }
 
         public async Task ShowLoginDialogAsync()
@@ -120,6 +126,7 @@ namespace KlitechHf.Services
             var tokens = JObject.Parse(response);
 
             AccessToken = tokens["access_token"].ToString();
+            Scheme = tokens["token_type"].ToString();
             _refreshToken = tokens["refresh_token"].ToString();
 
             _container.Values["refresh_token"] = _refreshToken;
@@ -130,7 +137,7 @@ namespace KlitechHf.Services
             using (var client = new HttpClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", AccessToken);
+                request.Headers.Authorization = CreateAuthenticationHeader();
 
                 var response = await Task.Run(() => client.SendAsync(request));
                 if (response.IsSuccessStatusCode)

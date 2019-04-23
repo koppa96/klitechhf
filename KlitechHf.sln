@@ -5,18 +5,23 @@ VisualStudioVersion = 16.0.28809.33
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KlitechHf", "KlitechHf\KlitechHf.csproj", "{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneDriveServices", "OneDriveServices\OneDriveServices.csproj", "{E66C0535-4A73-4928-B448-3601CA0279BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
 		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
 		Release|ARM = Release|ARM
 		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Debug|ARM.ActiveCfg = Debug|ARM
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Debug|ARM.Build.0 = Debug|ARM
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Debug|ARM.Deploy.0 = Debug|ARM
@@ -29,6 +34,7 @@ Global
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Debug|x86.ActiveCfg = Debug|x86
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Debug|x86.Build.0 = Debug|x86
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Debug|x86.Deploy.0 = Debug|x86
+		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Release|Any CPU.ActiveCfg = Release|x86
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Release|ARM.ActiveCfg = Release|ARM
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Release|ARM.Build.0 = Release|ARM
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Release|ARM.Deploy.0 = Release|ARM
@@ -41,6 +47,26 @@ Global
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Release|x86.ActiveCfg = Release|x86
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Release|x86.Build.0 = Release|x86
 		{67BDCBE7-8C49-4FB2-A309-FF671CFFE5F5}.Release|x86.Deploy.0 = Release|x86
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|ARM.ActiveCfg = Debug|ARM
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|ARM.Build.0 = Debug|ARM
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|ARM64.ActiveCfg = Debug|ARM64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|ARM64.Build.0 = Debug|ARM64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|x64.ActiveCfg = Debug|x64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|x64.Build.0 = Debug|x64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|x86.ActiveCfg = Debug|x86
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Debug|x86.Build.0 = Debug|x86
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|ARM.ActiveCfg = Release|ARM
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|ARM.Build.0 = Release|ARM
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|ARM64.ActiveCfg = Release|ARM64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|ARM64.Build.0 = Release|ARM64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|x64.ActiveCfg = Release|x64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|x64.Build.0 = Release|x64
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|x86.ActiveCfg = Release|x86
+		{E66C0535-4A73-4928-B448-3601CA0279BA}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
