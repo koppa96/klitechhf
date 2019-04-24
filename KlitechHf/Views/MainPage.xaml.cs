@@ -22,32 +22,5 @@ namespace KlitechHf.Views
         {
             this.InitializeComponent();
         }
-
-        private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
-        {
-            var folder = new DriveFolder
-            {
-                Id = "147EF121E9508B5!3349"
-            };
-
-            var items = await folder.GetChildrenAsync();
-        }
-
-        private async void FolderCreation(object sender, RoutedEventArgs e)
-        {
-            var driveService = DriveService.Instance;
-            await driveService.InitializeAsync();
-            //await driveService.CreateFolderAsync("TESTFOLDER");
-
-            var dialog = new FileOpenPicker
-            {
-                SuggestedStartLocation = PickerLocationId.Desktop
-            };
-
-            dialog.FileTypeFilter.Add("*");
-
-            var file = await dialog.PickSingleFileAsync();
-            await driveService.UploadAsync(file);
-        }
     }
 }

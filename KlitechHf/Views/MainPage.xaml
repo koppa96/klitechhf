@@ -7,36 +7,72 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:prism="using:Prism.Windows.Mvvm"
+    xmlns:drive="using:OneDriveServices.Drive.Model.DriveItems"
+    xmlns:util="using:KlitechHf.Utility"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
     d:DataContext="{d:DesignInstance vm:MainPageViewModel}">
 
-    <RelativePanel>
+    <Page.Resources>
+        <DataTemplate x:Key="FileTemplate" x:DataType="drive:DriveFile">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-        <Button Content="TestLoginAsync"
-                x:Name="LoginAsyncButton"
-                Command="{Binding LoginCommand}"
-                IsEnabled="{Binding LoginButtonEnabled, Mode=TwoWay}"
-                RelativePanel.AlignHorizontalCenterWithPanel="True"
-                RelativePanel.AlignVerticalCenterWithPanel="True"/>
+                <SymbolIcon Symbol="Page2"
+                            Grid.Column="0"/>
+
+                <TextBlock Text="{Binding Name}"
+                           Grid.Column="1"/>
+
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="FolderTemplate" x:DataType="drive:DriveFolder">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <SymbolIcon Symbol="Folder"
+                            Grid.Column="0"/>
+
+                <TextBlock Text="{Binding Name}"
+                           Grid.Column="1"/>
+            </Grid>
+        </DataTemplate>
+        <util:DriveItemTemplateSelector x:Key="DriveItemTemplateSelector" FileTemplate="{StaticResource FileTemplate}" FolderTemplate="{StaticResource FolderTemplate}"/>
+    </Page.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <ListView Name="ItemsListView" 
+                  ItemsSource="{Binding Children, Mode=OneWay}" 
+                  ItemTemplateSelector="{StaticResource DriveItemTemplateSelector}"
+                  Grid.Row="1"
+                  Grid.Column="1">
+
+        </ListView>
 
         <Button Content="Logout"
-                x:Name="LogoutButton"
-                Command="{Binding LogoutCommand}"
-                RelativePanel.AlignHorizontalCenterWith="LoginAsyncButton"
-                RelativePanel.Below="LoginAsyncButton"/>
-
-        <Button Content="ListChildrenTest"
-                x:Name="ChildrenTestButton"
-                Click="ButtonBase_OnClick"
-                RelativePanel.Below="LogoutButton"
-                RelativePanel.AlignHorizontalCenterWith="LogoutButton"/>
-
-        <Button Content="FolderCreationTest"
-                Click="FolderCreation"
-                RelativePanel.Below="ChildrenTestButton"
-                RelativePanel.AlignHorizontalCenterWith="ChildrenTestButton" />
-
-    </RelativePanel>
+                Grid.Row="0"
+                Grid.Column="2"
+                Command="{Binding LogoutCommand}"/>
+    </Grid>
 </Page>
