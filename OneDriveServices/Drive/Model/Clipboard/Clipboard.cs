@@ -11,12 +11,5 @@ namespace OneDriveServices.Drive.Model.Clipboard
     {
         public DriveItem Content { get; set; }
         public IClipboardOperation Operation { get; set; }
-
-        public async Task ExecuteAsync()
-        {
-            await Operation.ExecuteAsync(Content, DriveService.Instance.DriveId);
-            Content = null;
-            Operation = null;
-        }
     }
 }

@@ -9,6 +9,6 @@ namespace OneDriveServices.Drive.Model.Clipboard
 {
     public interface IClipboardOperation
     {
-        Task ExecuteAsync(DriveItem content, string parentId);
+        Task ExecuteAsync(DriveItem content, DriveFolder parent);
     }
 }

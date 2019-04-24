@@ -55,7 +55,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<DriveFolder>(json);
+                    var folder = JsonConvert.DeserializeObject<DriveFolder>(json);
+
+                    DriveService.Instance.Cache.AddItem(folder);
+                    return folder;
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());

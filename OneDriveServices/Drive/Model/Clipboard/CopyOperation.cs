@@ -15,7 +15,7 @@ namespace OneDriveServices.Drive.Model.Clipboard
 {
     public class CopyOperation : IClipboardOperation
     {
-        public async Task ExecuteAsync(DriveItem content, string parentId)
+        public async Task ExecuteAsync(DriveItem content, DriveFolder parent)
         {
             using (var client = new HttpClient())
             {
@@ -31,7 +31,7 @@ namespace OneDriveServices.Drive.Model.Clipboard
                     ParentReference = new ParentReference
                     {
                         DriveId = DriveService.Instance.DriveId,
-                        Id = parentId
+                        Id = parent.Id
                     }
                 };
                 var json = JsonConvert.SerializeObject(requestContent);

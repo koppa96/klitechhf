@@ -14,7 +14,7 @@ namespace OneDriveServices.Drive.Model.Clipboard
 {
     public class MoveOperation : IClipboardOperation
     {
-        public async Task ExecuteAsync(DriveItem content, string parentId)
+        public async Task ExecuteAsync(DriveItem content, DriveFolder parent)
         {
             using (var client = new HttpClient())
             {
@@ -29,7 +29,7 @@ namespace OneDriveServices.Drive.Model.Clipboard
                     Name = content.Name,
                     ParentReference = new ParentReference
                     {
-                        Id = parentId
+                        Id = parent.Id
                     }
                 };
                 var json = JsonConvert.SerializeObject(requestContent);
@@ -40,8 +40,6 @@ namespace OneDriveServices.Drive.Model.Clipboard
                 {
                     throw new WebException(await response.Content.ReadAsStringAsync());
                 }
-
-                DriveService.Instance.Children.Remove(content);
             }
         }
     }
