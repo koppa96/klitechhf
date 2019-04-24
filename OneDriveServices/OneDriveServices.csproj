@@ -123,6 +123,8 @@
     <Compile Include="Authentication\AuthService.cs" />
     <Compile Include="Drive\DriveService.cs" />
     <Compile Include="Authentication\Model\User.cs" />
+    <Compile Include="Drive\Model\Cache\Cache.cs" />
+    <Compile Include="Drive\Model\Cache\CacheItem.cs" />
     <Compile Include="Drive\Model\Clipboard\Clipboard.cs" />
     <Compile Include="Drive\Model\Clipboard\ClipboardItem.cs" />
     <Compile Include="Drive\Model\Clipboard\MoveOperation.cs" />

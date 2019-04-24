@@ -17,6 +17,17 @@ namespace OneDriveServices.Drive.Model.DriveItems
 
         public async Task<List<DriveItem>> GetChildrenAsync()
         {
+            var cachedItems = DriveService.Instance.Cache.GetChildrenOf(Id);
+            if (cachedItems != null)
+            {
+                return cachedItems;
+            }
+
+            return await LoadChildrenAsync();
+        }
+
+        public async Task<List<DriveItem>> LoadChildrenAsync()
+        {
             using (var client = new HttpClient())
             {
                 var url = new Url(DriveService.BaseUrl)
@@ -32,8 +43,11 @@ namespace OneDriveServices.Drive.Model.DriveItems
                     var result = JObject.Parse(json);
 
                     var children = result["value"];
-                    return children.Select(c => c["folder"] == null ? c.ToObject<DriveFile>() as DriveItem 
-                            : c.ToObject<DriveFolder>() as DriveItem).ToList();
+                    var childList = children.Select(c => c["folder"] == null ? c.ToObject<DriveFile>() as DriveItem
+                        : c.ToObject<DriveFolder>() as DriveItem).ToList();
+
+                    DriveService.Instance.Cache.AddChildrenToItem(Id, childList);
+                    return childList;
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());

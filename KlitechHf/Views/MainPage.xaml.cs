@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using OneDriveServices.Drive;
@@ -35,7 +37,17 @@ namespace KlitechHf.Views
         {
             var driveService = DriveService.Instance;
             await driveService.InitializeAsync();
-            await driveService.CreateFolderAsync("TESTFOLDER");
+            //await driveService.CreateFolderAsync("TESTFOLDER");
+
+            var dialog = new FileOpenPicker
+            {
+                SuggestedStartLocation = PickerLocationId.Desktop
+            };
+
+            dialog.FileTypeFilter.Add("*");
+
+            var file = await dialog.PickSingleFileAsync();
+            await driveService.UploadAsync(file);
         }
     }
 }

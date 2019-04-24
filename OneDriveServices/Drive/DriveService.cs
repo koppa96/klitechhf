@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Flurl;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 using OneDriveServices.Drive.Model;
+using OneDriveServices.Drive.Model.Cache;
+using OneDriveServices.Drive.Model.Clipboard;
 using OneDriveServices.Drive.Model.DriveItems;
 
 namespace OneDriveServices.Drive
@@ -22,11 +26,13 @@ namespace OneDriveServices.Drive
         public static DriveService Instance { get; set; } = new DriveService();
         public DriveFolder CurrentFolder { get; set; }
         public List<DriveItem> Children { get; set; }
-        public DriveItem ClipBoard { get; set; }
+        public Clipboard ClipBoard { get; set; }
         public string DriveId { get; set; }
+        public Cache Cache { get; set; }
 
         protected DriveService()
         {
+            Cache = new Cache();
         }
 
         /// <summary>
@@ -35,6 +41,7 @@ namespace OneDriveServices.Drive
         /// <returns>A task representing the loading</returns>
         public async Task InitializeAsync()
         {
+            Cache.Clear();
             using (var client = new HttpClient())
             {
                 var url = new Url(BaseUrl)
@@ -48,8 +55,13 @@ namespace OneDriveServices.Drive
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     CurrentFolder = JsonConvert.DeserializeObject<DriveFolder>(json);
+                    Cache.AddItem(CurrentFolder);
+
                     Children = await CurrentFolder.GetChildrenAsync();
+                    Cache.AddChildrenToItem(CurrentFolder.Id, Children);
+
                     DriveId = CurrentFolder.Parent.DriveId;
+
                     return;
                 }
 
@@ -92,7 +104,7 @@ namespace OneDriveServices.Drive
         /// </summary>
         /// <param name="name">The name of the folder to be created</param>
         /// <returns></returns>
-        public async Task<DriveFolder> CreateFolderAsync(string name)
+        public async Task CreateFolderAsync(string name)
         {
             if (Children.Any(c => c.Name == name))
             {
@@ -123,14 +135,43 @@ namespace OneDriveServices.Drive
                     Children.Add(folder);
 
                     Children = Children.OrderBy(c => c is DriveFile).ThenBy(c => c.Name).ToList();
-
-                    return folder;
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());
             }
         }
 
-        
+        public async Task UploadAsync(string filename, byte[] content)
+        {
+            if (Children.Any(c => c.Name == filename))
+            {
+                throw new InvalidOperationException("There is already a child with that name.");
+            }
+
+            using (var client = new HttpClient())
+            {
+                var url = new Url(BaseUrl)
+                    .AppendPathSegments("items", $"{CurrentFolder.Id}:", $"{filename}:", "content");
+
+                var request = new HttpRequestMessage(HttpMethod.Put, url.ToUri());
+                request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
+                request.Content = new ByteArrayContent(content);
+
+                var response = await Task.Run(() => client.SendAsync(request));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var file = JsonConvert.DeserializeObject<DriveFile>(json);
+
+                    Children.Add(file);
+                    Cache.AddItem(file);
+                }
+            }
+        }
+
+        public async Task RefreshContent()
+        {
+            Children = await CurrentFolder.LoadChildrenAsync();
+        }
     }
 }

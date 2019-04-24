@@ -26,11 +26,21 @@ namespace OneDriveServices.Drive.Model.DriveItems
 
         public string Path => Parent.Path + "/" + Name;
 
+        /// <summary>
+        /// Tries to load its parent from the local cache. If it doesn't exist then it downloads it from the drive
+        /// </summary>
+        /// <returns>The parent of the current item</returns>
         public async Task<DriveFolder> GetParentAsync()
         {
             if (Parent.Id == null)
             {
                 throw new InvalidOperationException("This is the root folder.");
+            }
+
+            var cachedItem = DriveService.Instance.Cache.GetItem(Parent.Id);
+            if (cachedItem != null)
+            {
+                return cachedItem as DriveFolder;
             }
 
             using (var client = new HttpClient())
@@ -67,6 +77,8 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 {
                     throw new WebException(await response.Content.ReadAsStringAsync());
                 }
+
+                DriveService.Instance.Cache.RemoveItem(this);
             }
         }
 
