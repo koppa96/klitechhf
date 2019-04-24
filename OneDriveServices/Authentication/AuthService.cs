@@ -67,9 +67,8 @@ namespace OneDriveServices.Authentication
         public async Task ShowLoginDialogAsync()
         {
             var loginDialog = new LoginDialog();
-            loginDialog.LoginComplete += GetAccessTokenFromLoginAsync;
-
             await loginDialog.ShowAsync();
+            await GetAccessTokenFromLoginAsync(loginDialog.AuthCode);
         }
 
         public async Task RefreshTokensAsync()

@@ -9,7 +9,7 @@ namespace OneDriveServices.Authentication.Views
 {
     public sealed partial class LoginDialog : ContentDialog, ILoginDialog
     {
-        public event Func<string, Task> LoginComplete;
+        public string AuthCode { get; set; }
 
         public LoginDialog()
         {
@@ -23,7 +23,7 @@ namespace OneDriveServices.Authentication.Views
 
         private void OnLoginComplete(string authCode)
         {
-            LoginComplete?.Invoke(authCode);
+            AuthCode = authCode;
             Hide();
         }
 
