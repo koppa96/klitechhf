@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 
-namespace OneDriveServices.Drive.Model
+namespace OneDriveServices.Drive.Model.DriveItems
 {
     public class DriveFolder : DriveItem
     {

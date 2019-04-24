@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -9,7 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 
-namespace OneDriveServices.Drive.Model
+namespace OneDriveServices.Drive.Model.DriveItems
 {
     public abstract class DriveItem
     {
@@ -50,6 +49,24 @@ namespace OneDriveServices.Drive.Model
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        public async Task DeleteAsync()
+        {
+            using (var client = new HttpClient())
+            {
+                var url = new Url(DriveService.BaseUrl)
+                    .AppendPathSegments("items", Id);
+
+                var request = new HttpRequestMessage(HttpMethod.Delete, url.ToUri());
+                request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
+
+                var response = await Task.Run(() => client.SendAsync(request));
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new WebException(await response.Content.ReadAsStringAsync());
+                }
             }
         }
 

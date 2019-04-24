@@ -3,10 +3,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Flurl;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 
-namespace OneDriveServices.Drive.Model
+namespace OneDriveServices.Drive.Model.DriveItems
 {
     public class DriveFile : DriveItem
     {
