@@ -28,9 +28,15 @@
                 RelativePanel.Below="LoginAsyncButton"/>
 
         <Button Content="ListChildrenTest"
+                x:Name="ChildrenTestButton"
                 Click="ButtonBase_OnClick"
                 RelativePanel.Below="LogoutButton"
                 RelativePanel.AlignHorizontalCenterWith="LogoutButton"/>
+
+        <Button Content="FolderCreationTest"
+                Click="FolderCreation"
+                RelativePanel.Below="ChildrenTestButton"
+                RelativePanel.AlignHorizontalCenterWith="ChildrenTestButton" />
 
     </RelativePanel>
 </Page>

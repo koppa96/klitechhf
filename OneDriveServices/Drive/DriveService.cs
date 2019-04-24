@@ -4,11 +4,14 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Flurl;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 using OneDriveServices.Drive.Model;
+using OneDriveServices.Drive.Model.DriveItems;
 
 namespace OneDriveServices.Drive
 {
@@ -19,6 +22,8 @@ namespace OneDriveServices.Drive
         public static DriveService Instance { get; set; } = new DriveService();
         public DriveFolder CurrentFolder { get; set; }
         public List<DriveItem> Children { get; set; }
+        public DriveItem ClipBoard { get; set; }
+        public string DriveId { get; set; }
 
         protected DriveService()
         {
@@ -28,7 +33,7 @@ namespace OneDriveServices.Drive
         /// Loads the root folder of the drive and its children
         /// </summary>
         /// <returns>A task representing the loading</returns>
-        public async Task Initialize()
+        public async Task InitializeAsync()
         {
             using (var client = new HttpClient())
             {
@@ -44,6 +49,8 @@ namespace OneDriveServices.Drive
                     var json = await response.Content.ReadAsStringAsync();
                     CurrentFolder = JsonConvert.DeserializeObject<DriveFolder>(json);
                     Children = await CurrentFolder.GetChildrenAsync();
+                    DriveId = CurrentFolder.Parent.DriveId;
+                    return;
                 }
 
                 throw new WebException("Couldn't get the root folder.");
@@ -74,9 +81,56 @@ namespace OneDriveServices.Drive
             {
                 CurrentFolder = folder;
                 Children = await CurrentFolder.GetChildrenAsync();
+                return;
             }
 
             throw new InvalidOperationException("You can only navigate to folders.");
         }
+
+        /// <summary>
+        /// Creates a folder as a child of the current folder and adds it to the list of children
+        /// </summary>
+        /// <param name="name">The name of the folder to be created</param>
+        /// <returns></returns>
+        public async Task<DriveFolder> CreateFolderAsync(string name)
+        {
+            if (Children.Any(c => c.Name == name))
+            {
+                throw new InvalidOperationException("There is already a child with that name.");
+            }
+
+            using (var client = new HttpClient())
+            {
+                var url = new Url(BaseUrl)
+                    .AppendPathSegments("items", CurrentFolder.Id, "children");
+
+                var request = new HttpRequestMessage(HttpMethod.Post, url.ToUri());
+                request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
+
+                var content = new JObject
+                {
+                    { "name", name },
+                    { "folder", new JObject() },
+                    { "@microsoft.graph.conflictBehaviour", "fail" }
+                };
+                request.Content = new StringContent(content.ToString(), Encoding.UTF8, "application/json");
+
+                var response = await Task.Run(() => client.SendAsync(request));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var folder = JsonConvert.DeserializeObject<DriveFolder>(json);
+                    Children.Add(folder);
+
+                    Children = Children.OrderBy(c => c is DriveFile).ThenBy(c => c.Name).ToList();
+
+                    return folder;
+                }
+
+                throw new WebException(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        
     }
 }
