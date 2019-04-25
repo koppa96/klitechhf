@@ -21,9 +21,10 @@ namespace OneDriveServices.Authentication.Views
             }
         }
 
-        private void OnLoginComplete(string authCode)
+        private async void OnLoginComplete(string authCode)
         {
             AuthCode = authCode;
+            await WebView.ClearTemporaryWebDataAsync();
             Hide();
         }
 
