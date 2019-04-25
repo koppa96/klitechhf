@@ -67,8 +67,8 @@ namespace KlitechHf.ViewModels
 
         private async Task LoginAsync()
         {
-            await AuthService.Instance.LoginAsync();
             IsLoading = true;
+            await AuthService.Instance.LoginAsync();
             CurrentFolder = await _drive.GetRootAsync();
             Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
             IsLoading = false;

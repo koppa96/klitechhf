@@ -16,42 +16,18 @@
     d:DataContext="{d:DesignInstance vm:MainPageViewModel}">
 
     <Page.Resources>
-        <DataTemplate x:Key="FileTemplate" x:DataType="drive:DriveFile">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/DataTemplates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
-                <SymbolIcon Symbol="Page2"
-                            Grid.Column="0"/>
-
-                <TextBlock Text="{Binding Name}"
-                           Grid.Column="1"/>
-
-            </Grid>
-        </DataTemplate>
-        <DataTemplate x:Key="FolderTemplate" x:DataType="drive:DriveFolder">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <SymbolIcon Symbol="Folder"
-                            Grid.Column="0"/>
-
-                <TextBlock Text="{Binding Name}"
-                           Grid.Column="1"/>
-            </Grid>
-        </DataTemplate>
-        <util:DriveItemTemplateSelector x:Key="DriveItemTemplateSelector" FileTemplate="{StaticResource FileTemplate}" FolderTemplate="{StaticResource FolderTemplate}"/>
-        <convert:ListVisibilityConverter x:Key="ListVisibilityConverter"/>
+            <util:DriveItemTemplateSelector x:Key="DriveItemTemplateSelector" FileTemplate="{StaticResource FileTemplate}" FolderTemplate="{StaticResource FolderTemplate}"/>
+            <convert:ListVisibilityConverter x:Key="ListVisibilityConverter"/>
+        </ResourceDictionary>
     </Page.Resources>
     
-    <Grid>
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="5*"/>
@@ -70,6 +46,12 @@
                   Grid.Row="1"
                   Grid.Column="1"
                   Visibility="{Binding IsLoading, Converter={StaticResource ListVisibilityConverter}}">
+
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"></Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
 
         </ListView>
 

@@ -1,0 +1,82 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:driveItems="using:OneDriveServices.Drive.Model.DriveItems"
+    xmlns:local="using:KlitechHf.Resources"
+    x:Class="KlitechHf.Resources.DataTemplates">
+
+    <DataTemplate x:Key="FileTemplate" x:DataType="driveItems:DriveFile">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <SymbolIcon Symbol="Page2"
+                            Grid.Column="0"/>
+
+            <TextBlock Text="{Binding Name}"
+                           Grid.Column="1"/>
+
+            <TextBlock Text="{Binding LastModified}"
+                           Grid.Column="2"/>
+
+            <TextBlock Text="File"
+                           Grid.Column="3"/>
+
+            <TextBlock Text="{Binding Size}"
+                           Grid.Column="4"/>
+
+            <Grid.ContextFlyout>
+                <MenuFlyout x:Name="FileFlyout">
+                    <MenuFlyoutItem Text="Copy" Icon="Copy"/>
+                    <MenuFlyoutItem Text="Cut" Icon="Cut"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Rename" Icon="Edit"/>
+                    <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Download" Icon="Download"/>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
+
+        </Grid>
+    </DataTemplate>
+    <DataTemplate x:Key="FolderTemplate" x:DataType="driveItems:DriveFolder">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <SymbolIcon Symbol="Folder"
+                            Grid.Column="0"/>
+
+            <TextBlock Text="{Binding Name}"
+                           Grid.Column="1"/>
+
+            <TextBlock Text="{Binding LastModified}"
+                           Grid.Column="2"/>
+
+            <TextBlock Text="Folder"
+                           Grid.Column="3"/>
+
+            <Grid.ContextFlyout>
+                <MenuFlyout x:Name="FolderFlyout">
+                    <MenuFlyoutItem Text="Copy" Icon="Copy"/>
+                    <MenuFlyoutItem Text="Cut" Icon="Cut"/>
+                    <MenuFlyoutItem Text="Paste" Icon="Paste"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Rename" Icon="Edit"/>
+                    <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
+        </Grid>
+    </DataTemplate>
+
+</ResourceDictionary>
