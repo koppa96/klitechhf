@@ -24,7 +24,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         [JsonProperty("parentReference")]
         public ParentReference Parent { get; set; }
 
-        public string Path => Parent.Path + "/" + Name;
+        public string Path => (Parent.Path == null ? "/drive" : "") + Url.Decode(Parent.Path, false) + "/" + Name;//Parent.Path + "/" + Name;
 
         /// <summary>
         /// Tries to load its parent from the local cache. If it doesn't exist then it downloads it from the drive
@@ -37,32 +37,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 throw new InvalidOperationException("This is the root folder.");
             }
 
-            var cachedItem = DriveService.Instance.Cache.GetItem(Parent.Id);
-            if (cachedItem != null)
-            {
-                return cachedItem as DriveFolder;
-            }
-
-            using (var client = new HttpClient())
-            {
-                var url = new Url(DriveService.BaseUrl)
-                    .AppendPathSegments("items", Parent.Id);
-
-                var request = new HttpRequestMessage(HttpMethod.Get, url.ToUri());
-                request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
-
-                var response = await Task.Run(() => client.SendAsync(request));
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    var folder = JsonConvert.DeserializeObject<DriveFolder>(json);
-
-                    DriveService.Instance.Cache.AddItem(folder);
-                    return folder;
-                }
-
-                throw new WebException(await response.Content.ReadAsStringAsync());
-            }
+            return await DriveService.Instance.GetItemAsync(Parent.Id) as DriveFolder;
         }
 
         public async Task DeleteAsync()

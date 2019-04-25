@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication.Model;
 using OneDriveServices.Authentication.Views;
+using OneDriveServices.Drive;
 
 namespace OneDriveServices.Authentication
 {
@@ -57,6 +58,7 @@ namespace OneDriveServices.Authentication
             AccessToken = null;
             _refreshToken = null;
             _container.Values["refresh_token"] = null;
+            DriveService.Instance.Cache.Clear();
         }
 
         public AuthenticationHeaderValue CreateAuthenticationHeader()

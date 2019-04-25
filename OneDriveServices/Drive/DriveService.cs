@@ -70,8 +70,47 @@ namespace OneDriveServices.Drive
             }
         }
 
+        public async Task<DriveItem> GetItemAsync(string id)
+        {
+            var cachedItem = Cache.GetItem(id);
+            if (cachedItem != null)
+            {
+                return cachedItem;
+            }
+
+            using (var client = new HttpClient())
+            {
+                var url = new Url(DriveService.BaseUrl)
+                    .AppendPathSegments("items", id);
+
+                var request = new HttpRequestMessage(HttpMethod.Get, url.ToUri());
+                request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
+
+                var response = await Task.Run(() => client.SendAsync(request));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var obj = JObject.Parse(json);
+                    DriveItem item;
+                    if (obj.ContainsKey("folder"))
+                    {
+                        item = JsonConvert.DeserializeObject<DriveFolder>(json);
+                    }
+                    else
+                    {
+                        item = JsonConvert.DeserializeObject<DriveFile>(json);
+                    }
+
+                    Cache.AddItem(item);
+                    return item;
+                }
+
+                throw new WebException(await response.Content.ReadAsStringAsync());
+            }
+        }
+
         /// <summary>
-        /// Creates a folder as a child of the current folder and adds it to the list of children
+        /// Creates a folder as a child of the target folder and adds it to the list of children
         /// </summary>
         /// <param name="parent">The parent of the newly created folder</param>
         /// <param name="name">The name of the folder to be created</param>
