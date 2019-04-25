@@ -3,7 +3,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:driveItems="using:OneDriveServices.Drive.Model.DriveItems"
     xmlns:local="using:KlitechHf.Resources"
+    xmlns:m="using:KlitechHf.Model"
+    xmlns:i="using:Microsoft.Xaml.Interactivity"
+    xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:convert="using:KlitechHf.Converters"
     x:Class="KlitechHf.Resources.DataTemplates">
+
+    <convert:FileSizeConverter x:Key="FileSizeConverter"/>
 
     <DataTemplate x:Key="FileTemplate" x:DataType="driveItems:DriveFile">
         <Grid HorizontalAlignment="Stretch">
@@ -27,23 +33,31 @@
             <TextBlock Text="File"
                            Grid.Column="3"/>
 
-            <TextBlock Text="{Binding Size}"
-                           Grid.Column="4"/>
+            <TextBlock Text="{Binding Size, Converter={StaticResource FileSizeConverter}}"
+                       Grid.Column="4"
+                       HorizontalAlignment="Right"/>
 
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name="FileFlyout">
-                    <MenuFlyoutItem Text="Copy" Icon="Copy"/>
-                    <MenuFlyoutItem Text="Cut" Icon="Cut"/>
+                    <MenuFlyoutItem Text="Copy" Icon="Copy" Command="{Binding ElementName=ThisPage, Path=DataContext.CopyCommand}" CommandParameter="{Binding}" MinWidth="150"/>
+                    <MenuFlyoutItem Text="Cut" Icon="Cut" Command="{Binding ElementName=ThisPage, Path=DataContext.CutCommand}" CommandParameter="{Binding}"/>
                     <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Rename" Icon="Edit"/>
-                    <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+                    <MenuFlyoutItem Text="Rename" Icon="Edit" Command="{Binding ElementName=ThisPage, Path=DataContext.RenameCommand}" CommandParameter="{Binding}"/>
+                    <MenuFlyoutItem Text="Delete" Icon="Delete" Command="{Binding ElementName=ThisPage, Path=DataContext.DeleteCommand}" CommandParameter="{Binding}"/>
                     <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Download" Icon="Download"/>
+                    <MenuFlyoutItem Text="Download" Icon="Download" Command="{Binding ElementName=ThisPage, Path=DataContext.DownloadCommand}" CommandParameter="{Binding}"/>
                 </MenuFlyout>
             </Grid.ContextFlyout>
 
+            <i:Interaction.Behaviors>
+                <ic:EventTriggerBehavior EventName="DoubleTapped">
+                    <ic:InvokeCommandAction Command="{Binding ElementName=ThisPage, Path=DataContext.DownloadCommand}" CommandParameter="{Binding}"/>
+                </ic:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+
         </Grid>
     </DataTemplate>
+
     <DataTemplate x:Key="FolderTemplate" x:DataType="driveItems:DriveFolder">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
@@ -68,14 +82,46 @@
 
             <Grid.ContextFlyout>
                 <MenuFlyout x:Name="FolderFlyout">
-                    <MenuFlyoutItem Text="Copy" Icon="Copy"/>
-                    <MenuFlyoutItem Text="Cut" Icon="Cut"/>
-                    <MenuFlyoutItem Text="Paste" Icon="Paste"/>
+                    <MenuFlyoutItem Text="Copy" Icon="Copy" Command="{Binding ElementName=ThisPage, Path=DataContext.CopyCommand}" CommandParameter="{Binding}" MinWidth="150"/>
+                    <MenuFlyoutItem Text="Cut" Icon="Cut" Command="{Binding ElementName=ThisPage, Path=DataContext.CutCommand}" CommandParameter="{Binding}"/>
+                    <MenuFlyoutItem Text="Paste" Icon="Paste" Command="{Binding ElementName=ThisPage, Path=DataContext.PasteCommand}"/>
                     <MenuFlyoutSeparator/>
-                    <MenuFlyoutItem Text="Rename" Icon="Edit"/>
-                    <MenuFlyoutItem Text="Delete" Icon="Delete"/>
+                    <MenuFlyoutItem Text="Rename" Icon="Edit" Command="{Binding ElementName=ThisPage, Path=DataContext.RenameCommand}" CommandParameter="{Binding}"/>
+                    <MenuFlyoutItem Text="Delete" Icon="Delete" Command="{Binding ElementName=ThisPage, Path=DataContext.DeleteCommand}" CommandParameter="{Binding}"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Open" Icon="OpenLocal" Command="{Binding ElementName=ThisPage, Path=DataContext.OpenCommand}" CommandParameter="{Binding}"/>
                 </MenuFlyout>
             </Grid.ContextFlyout>
+
+            <i:Interaction.Behaviors>
+                <ic:EventTriggerBehavior EventName="Tapped">
+                    <ic:InvokeCommandAction Command="{Binding ElementName=ThisPage, Path=DataContext.OpenCommand}" CommandParameter="{Binding}"/>
+                </ic:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="ParentTemplate" x:DataType="m:ParentItem">
+        <Grid HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <SymbolIcon Symbol="MoveToFolder"
+                        Grid.Column="0"/>
+
+            <TextBlock Text="..."
+                       Grid.Column="1"/>
+
+            <i:Interaction.Behaviors>
+                <ic:EventTriggerBehavior EventName="Tapped">
+                    <ic:InvokeCommandAction Command="{Binding ElementName=ThisPage, Path=DataContext.NavigateUpCommand}"/>
+                </ic:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
         </Grid>
     </DataTemplate>
 

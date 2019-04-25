@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using KlitechHf.Model;
 using OneDriveServices.Drive.Model.DriveItems;
 
 namespace KlitechHf.Utility
@@ -14,6 +15,7 @@ namespace KlitechHf.Utility
     {
         public DataTemplate FileTemplate { get; set; }
         public DataTemplate FolderTemplate { get; set; }
+        public DataTemplate ParentTemplate { get; set; }
 
         protected override DataTemplate SelectTemplateCore(object item, DependencyObject container)
         {
@@ -25,6 +27,11 @@ namespace KlitechHf.Utility
             if (item is DriveFile)
             {
                 return FileTemplate;
+            }
+
+            if (item is ParentItem)
+            {
+                return ParentTemplate;
             }
 
             if (item is DriveFolder)
