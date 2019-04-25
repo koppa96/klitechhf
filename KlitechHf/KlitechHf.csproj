@@ -119,7 +119,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\FileSizeConverter.cs" />
     <Compile Include="Converters\ListVisibilityConverter.cs" />
+    <Compile Include="Model\ParentItem.cs" />
     <Compile Include="Resources\DataTemplates.xaml.cs" />
     <Compile Include="Utility\DriveItemTemplateSelector.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />

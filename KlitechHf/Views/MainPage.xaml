@@ -13,7 +13,8 @@
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
-    d:DataContext="{d:DesignInstance vm:MainPageViewModel}">
+    d:DataContext="{d:DesignInstance vm:MainPageViewModel}"
+    Name="ThisPage">
 
     <Page.Resources>
         <ResourceDictionary>
@@ -21,9 +22,10 @@
                 <ResourceDictionary Source="../Resources/DataTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
-            <util:DriveItemTemplateSelector x:Key="DriveItemTemplateSelector" FileTemplate="{StaticResource FileTemplate}" FolderTemplate="{StaticResource FolderTemplate}"/>
+            <util:DriveItemTemplateSelector x:Key="DriveItemTemplateSelector" FileTemplate="{StaticResource FileTemplate}" FolderTemplate="{StaticResource FolderTemplate}" ParentTemplate="{StaticResource ParentTemplate}"/>
             <convert:ListVisibilityConverter x:Key="ListVisibilityConverter"/>
         </ResourceDictionary>
+
     </Page.Resources>
     
     <Grid HorizontalAlignment="Stretch"
@@ -39,6 +41,12 @@
             <ColumnDefinition Width="5*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
+
+        <TextBlock Text="{Binding CurrentFolder.Path, Mode=OneWay}"
+                   Grid.Row="0"
+                   Grid.Column="1"
+                   VerticalAlignment="Center"
+                   FontSize="18"/>
 
         <ListView Name="ItemsListView" 
                   ItemsSource="{Binding Children, Mode=OneWay}" 

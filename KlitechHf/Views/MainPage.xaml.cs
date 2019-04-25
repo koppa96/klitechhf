@@ -20,7 +20,7 @@ namespace KlitechHf.Views
     {
         public MainPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
     }
 }
