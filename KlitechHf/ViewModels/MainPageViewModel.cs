@@ -18,6 +18,7 @@ namespace KlitechHf.ViewModels
         private DriveService _drive;
         private DriveFolder _currentFolder;
         private ObservableCollection<DriveItem> _children;
+        private bool _isLoading;
 
         public DriveFolder CurrentFolder {
             get => _currentFolder;
@@ -38,6 +39,16 @@ namespace KlitechHf.ViewModels
             }
         }
 
+        public bool IsLoading {
+            get => _isLoading;
+            set
+            {
+                _isLoading = value;
+                RaisePropertyChanged();
+            }
+        }
+
+
         public ICommand LogoutCommand { get; }
 
         public MainPageViewModel()
@@ -46,6 +57,7 @@ namespace KlitechHf.ViewModels
             _drive = DriveService.Instance;
 
             LogoutCommand = new DelegateCommand(Logout);
+            IsLoading = false;
         }
 
         public override async void OnNavigatedTo(NavigatedToEventArgs e, Dictionary<string, object> viewModelState)
@@ -56,8 +68,10 @@ namespace KlitechHf.ViewModels
         private async Task LoginAsync()
         {
             await AuthService.Instance.LoginAsync();
+            IsLoading = true;
             CurrentFolder = await _drive.GetRootAsync();
             Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
+            IsLoading = false;
         }
 
         private async void Logout()

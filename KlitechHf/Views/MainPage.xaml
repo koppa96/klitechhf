@@ -9,6 +9,7 @@
     xmlns:prism="using:Prism.Windows.Mvvm"
     xmlns:drive="using:OneDriveServices.Drive.Model.DriveItems"
     xmlns:util="using:KlitechHf.Utility"
+    xmlns:convert="using:KlitechHf.Converters"
     prism:ViewModelLocator.AutoWireViewModel="True"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" 
@@ -47,6 +48,7 @@
             </Grid>
         </DataTemplate>
         <util:DriveItemTemplateSelector x:Key="DriveItemTemplateSelector" FileTemplate="{StaticResource FileTemplate}" FolderTemplate="{StaticResource FolderTemplate}"/>
+        <convert:ListVisibilityConverter x:Key="ListVisibilityConverter"/>
     </Page.Resources>
     
     <Grid>
@@ -66,9 +68,16 @@
                   ItemsSource="{Binding Children, Mode=OneWay}" 
                   ItemTemplateSelector="{StaticResource DriveItemTemplateSelector}"
                   Grid.Row="1"
-                  Grid.Column="1">
+                  Grid.Column="1"
+                  Visibility="{Binding IsLoading, Converter={StaticResource ListVisibilityConverter}}">
 
         </ListView>
+
+        <ProgressRing Grid.Row="1"
+                      Grid.Column="1"
+                      Width="100"
+                      Height="100"
+                      IsActive="{Binding IsLoading}"/>
 
         <Button Content="Logout"
                 Grid.Row="0"
