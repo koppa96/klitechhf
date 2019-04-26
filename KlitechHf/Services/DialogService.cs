@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Controls;
 
 namespace KlitechHf.Services
@@ -32,6 +35,22 @@ namespace KlitechHf.Services
 
             var result = await dialog.ShowAsync();
             return result == ContentDialogResult.Primary;
+        }
+
+        public async Task<IEnumerable<StorageFile>> ShowFilePickerAsync()
+        {
+            var filePicker = new FileOpenPicker();
+            filePicker.FileTypeFilter.Add("*");
+
+            return await filePicker.PickMultipleFilesAsync();
+        }
+
+        public async Task<StorageFolder> ShowFolderPickerAsync()
+        {
+            var folderPicker = new FolderPicker();
+            folderPicker.FileTypeFilter.Add("*");
+
+            return await folderPicker.PickSingleFolderAsync();
         }
     }
 }

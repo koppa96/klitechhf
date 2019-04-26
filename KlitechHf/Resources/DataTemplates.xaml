@@ -41,6 +41,7 @@
                 <MenuFlyout x:Name="FileFlyout">
                     <MenuFlyoutItem Text="Copy" Icon="Copy" Command="{Binding ElementName=ThisPage, Path=DataContext.CopyCommand}" CommandParameter="{Binding}" MinWidth="150"/>
                     <MenuFlyoutItem Text="Cut" Icon="Cut" Command="{Binding ElementName=ThisPage, Path=DataContext.CutCommand}" CommandParameter="{Binding}"/>
+                    <MenuFlyoutItem Text="Paste here" Icon="Paste" Command="{Binding ElementName=ThisPage, Path=DataContext.PasteHereCommand}" CommandParameter="{Binding}"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Rename" Icon="Edit" Command="{Binding ElementName=ThisPage, Path=DataContext.RenameCommand}" CommandParameter="{Binding}"/>
                     <MenuFlyoutItem Text="Delete" Icon="Delete" Command="{Binding ElementName=ThisPage, Path=DataContext.DeleteCommand}" CommandParameter="{Binding}"/>
@@ -84,7 +85,7 @@
                 <MenuFlyout x:Name="FolderFlyout">
                     <MenuFlyoutItem Text="Copy" Icon="Copy" Command="{Binding ElementName=ThisPage, Path=DataContext.CopyCommand}" CommandParameter="{Binding}" MinWidth="150"/>
                     <MenuFlyoutItem Text="Cut" Icon="Cut" Command="{Binding ElementName=ThisPage, Path=DataContext.CutCommand}" CommandParameter="{Binding}"/>
-                    <MenuFlyoutItem Text="Paste" Icon="Paste" Command="{Binding ElementName=ThisPage, Path=DataContext.PasteCommand}"/>
+                    <MenuFlyoutItem Text="Paste" Icon="Paste" Command="{Binding ElementName=ThisPage, Path=DataContext.PasteCommand}" CommandParameter="{Binding}"/>
                     <MenuFlyoutSeparator/>
                     <MenuFlyoutItem Text="Rename" Icon="Edit" Command="{Binding ElementName=ThisPage, Path=DataContext.RenameCommand}" CommandParameter="{Binding}"/>
                     <MenuFlyoutItem Text="Delete" Icon="Delete" Command="{Binding ElementName=ThisPage, Path=DataContext.DeleteCommand}" CommandParameter="{Binding}"/>
@@ -122,6 +123,14 @@
                     <ic:InvokeCommandAction Command="{Binding ElementName=ThisPage, Path=DataContext.NavigateUpCommand}"/>
                 </ic:EventTriggerBehavior>
             </i:Interaction.Behaviors>
+
+            <Grid.ContextFlyout>
+                <MenuFlyout x:Name="ParentFlyout">
+                    <MenuFlyoutItem Text="Paste here" Icon="Paste" Command="{Binding ElementName=ThisPage, Path=DataContext.PasteHereCommand}" CommandParameter="{Binding}" MinWidth="150"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="Go back" Icon="Back" Command="{Binding ElementName=ThisPage, Path=DataContext.NavigateUpCommand}"/>
+                </MenuFlyout>
+            </Grid.ContextFlyout>
         </Grid>
     </DataTemplate>
 

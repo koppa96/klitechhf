@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -27,7 +28,7 @@ namespace KlitechHf.ViewModels
         private readonly DialogService _dialogService;
         private DriveFolder _currentFolder;
         private ObservableCollection<DriveItem> _children;
-        private bool _isLoading;
+        private bool _isLoading, _removeItemOnPaste;
 
         public DriveFolder CurrentFolder {
             get => _currentFolder;
@@ -66,6 +67,8 @@ namespace KlitechHf.ViewModels
         public ICommand OpenCommand { get; }
         public ICommand NavigateUpCommand { get; }
         public ICommand UploadCommand { get; }
+        public ICommand PasteCommand { get; }
+        public ICommand PasteHereCommand { get; }
 
         public MainPageViewModel(DialogService dialogService)
         {
@@ -76,22 +79,48 @@ namespace KlitechHf.ViewModels
             LogoutCommand = new DelegateCommand(Logout);
             CopyCommand = new DelegateCommand<DriveItem>(CopySelectedItem);
             CutCommand = new DelegateCommand<DriveItem>(CutSelectedItem);
-            RenameCommand = new DelegateCommand<DriveItem>(RenameSelectedItem);
-            DeleteCommand = new DelegateCommand<DriveItem>(DeleteSelectedItem);
-            DownloadCommand = new DelegateCommand<DriveFile>(DownloadSelectedFile);
-            OpenCommand = new DelegateCommand<DriveFolder>(OpenSelectedFolder);
-            NavigateUpCommand = new DelegateCommand(NavigateUp);
-            UploadCommand = new DelegateCommand(Upload);
+            RenameCommand = new DelegateCommand<DriveItem>(RenameSelectedItemAsync);
+            DeleteCommand = new DelegateCommand<DriveItem>(DeleteSelectedItemAsync);
+            DownloadCommand = new DelegateCommand<DriveFile>(DownloadSelectedFileAsync);
+            OpenCommand = new DelegateCommand<DriveFolder>(OpenSelectedFolderAsync);
+            NavigateUpCommand = new DelegateCommand(NavigateUpAsync);
+            UploadCommand = new DelegateCommand(UploadAsync);
+            PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync, f => !_drive.ClipBoard.Empty);
+            PasteHereCommand = new DelegateCommand(PasteHereAsync, () => !_drive.ClipBoard.Empty);
 
             IsLoading = false;
+            _removeItemOnPaste = false;
         }
 
-        private async void Upload()
+        private async void PasteHereAsync()
         {
-            var filePicker = new FileOpenPicker();
-            filePicker.FileTypeFilter.Add("*");
+            if (_removeItemOnPaste)
+            {
+                Children.Remove(_drive.ClipBoard.Content);
+            }
 
-            var files = await filePicker.PickMultipleFilesAsync();
+            var item = _drive.ClipBoard.Content;
+            await _drive.PasteAsync(CurrentFolder);
+
+            if (item is DriveFolder)
+            {
+                int index = Children.
+            }
+        }
+
+        private async void PasteAsync(DriveFolder folder)
+        {
+            if (_removeItemOnPaste)
+            {
+                Children.Remove(_drive.ClipBoard.Content);
+            }
+
+            await _drive.PasteAsync(folder);
+        }
+
+        private async void UploadAsync()
+        {
+            var files = await _dialogService.ShowFilePickerAsync();
             IsLoading = true;
             foreach (var file in files)
             {
@@ -102,7 +131,7 @@ namespace KlitechHf.ViewModels
             IsLoading = false;
         }
 
-        private async void NavigateUp()
+        private async void NavigateUpAsync()
         {
             IsLoading = true;
             CurrentFolder = await CurrentFolder.GetParentAsync();
@@ -115,7 +144,7 @@ namespace KlitechHf.ViewModels
             IsLoading = false;
         }
 
-        private async void OpenSelectedFolder(DriveFolder folder)
+        private async void OpenSelectedFolderAsync(DriveFolder folder)
         {
             IsLoading = true;
             CurrentFolder = folder;
@@ -124,12 +153,9 @@ namespace KlitechHf.ViewModels
             IsLoading = false;
         }
 
-        private async void DownloadSelectedFile(DriveFile file)
+        private async void DownloadSelectedFileAsync(DriveFile file)
         {
-            var folderPicker = new FolderPicker();
-            folderPicker.FileTypeFilter.Add("*");
-
-            var folder = await folderPicker.PickSingleFolderAsync();
+            var folder = await _dialogService.ShowFolderPickerAsync();
             if (folder != null)
             {
                 IsLoading = true;
@@ -140,7 +166,7 @@ namespace KlitechHf.ViewModels
             }
         }
 
-        private async void DeleteSelectedItem(DriveItem item)
+        private async void DeleteSelectedItemAsync(DriveItem item)
         {
             if (await _dialogService.ShowConfirmationDialogAsync($"Are you sure want to delete {item.Name}?"))
             {
@@ -149,7 +175,7 @@ namespace KlitechHf.ViewModels
             }
         }
 
-        private async void RenameSelectedItem(DriveItem item)
+        private async void RenameSelectedItemAsync(DriveItem item)
         {
             var name = await _dialogService.ShowRenameDialogAsync();
             await item.RenameAsync(name);
@@ -175,11 +201,13 @@ namespace KlitechHf.ViewModels
 
         private void CopySelectedItem(DriveItem item)
         {
+            _removeItemOnPaste = false;
             _drive.Copy(item);
         }
 
         private void CutSelectedItem(DriveItem item)
         {
+            _removeItemOnPaste = true;
             _drive.Cut(item);
         }
 
