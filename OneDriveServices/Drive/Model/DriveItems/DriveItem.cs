@@ -12,16 +12,16 @@ namespace OneDriveServices.Drive.Model.DriveItems
 {
     public abstract class DriveItem
     {
-        [JsonProperty("id")]
+        [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
 
-        [JsonProperty("lastModifiedDateTime")]
+        [JsonProperty(PropertyName = "lastModifiedDateTime")]
         public DateTime LastModified { get; set; }
 
-        [JsonProperty("parentReference")]
+        [JsonProperty(PropertyName = "parentReference")]
         public ParentReference Parent { get; set; }
 
         public string Path => (Parent.Path == null ? "/drive" : "") + Url.Decode(Parent.Path, false) + "/" + Name;//Parent.Path + "/" + Name;
@@ -37,7 +37,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 throw new InvalidOperationException("This is the root folder.");
             }
 
-            return await DriveService.Instance.GetItemAsync(Parent.Id) as DriveFolder;
+            return await DriveService.Instance.GetItemAsync<DriveFolder>(Parent.Id);
         }
 
         public async Task DeleteAsync()
@@ -56,7 +56,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
                     throw new WebException(await response.Content.ReadAsStringAsync());
                 }
 
-                DriveService.Instance.Cache.RemoveItem(this);
+                DriveService.Instance.Cache.RemoveItem(Id);
             }
         }
 

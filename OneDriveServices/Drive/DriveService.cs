@@ -32,6 +32,7 @@ namespace OneDriveServices.Drive
         protected DriveService()
         {
             Cache = new Cache();
+            ClipBoard = new Clipboard();
         }
 
         /// <summary>
@@ -70,9 +71,9 @@ namespace OneDriveServices.Drive
             }
         }
 
-        public async Task<DriveItem> GetItemAsync(string id)
+        public async Task<T> GetItemAsync<T>(string id) where T : DriveItem
         {
-            var cachedItem = Cache.GetItem(id);
+            var cachedItem = Cache.GetItem<T>(id);
             if (cachedItem != null)
             {
                 return cachedItem;
@@ -91,15 +92,7 @@ namespace OneDriveServices.Drive
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     var obj = JObject.Parse(json);
-                    DriveItem item;
-                    if (obj.ContainsKey("folder"))
-                    {
-                        item = JsonConvert.DeserializeObject<DriveFolder>(json);
-                    }
-                    else
-                    {
-                        item = JsonConvert.DeserializeObject<DriveFile>(json);
-                    }
+                    var item = JsonConvert.DeserializeObject<T>(json);
 
                     Cache.AddItem(item);
                     return item;
@@ -139,7 +132,6 @@ namespace OneDriveServices.Drive
                     var json = await response.Content.ReadAsStringAsync();
                     var folder = JsonConvert.DeserializeObject<DriveFolder>(json);
                     Cache.AddItem(folder);
-                    Cache.AppendChild(parent.Id, folder);
 
                     return folder;
                 }
@@ -172,7 +164,6 @@ namespace OneDriveServices.Drive
                     var json = await response.Content.ReadAsStringAsync();
                     var file = JsonConvert.DeserializeObject<DriveFile>(json);
                     Cache.AddItem(file);
-                    Cache.AppendChild(parent.Id, file);
 
                     return file;
                 }
@@ -205,9 +196,10 @@ namespace OneDriveServices.Drive
         /// Executes the clipboard operation with
         /// </summary>
         /// <returns></returns>
-        public async Task PasteAsync()
+        public async Task PasteAsync(DriveFolder targetFolder)
         {
-            //await ClipBoard.Operation.ExecuteAsync(ClipBoard.Content, )
+            await ClipBoard.Operation.ExecuteAsync(ClipBoard.Content, targetFolder);
+            ClipBoard = new Clipboard();
         }
     }
 }

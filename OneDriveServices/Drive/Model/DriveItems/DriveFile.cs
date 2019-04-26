@@ -9,6 +9,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
 {
     public class DriveFile : DriveItem
     {
+        [JsonProperty(PropertyName = "size")]
         public int Size { get; set; }
 
         public async Task<byte[]> DownloadAsync()

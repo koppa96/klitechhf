@@ -133,6 +133,7 @@
     <Compile Include="Drive\Model\DriveItems\DriveFile.cs" />
     <Compile Include="Drive\Model\DriveItems\DriveFolder.cs" />
     <Compile Include="Drive\Model\DriveItems\DriveItem.cs" />
+    <Compile Include="Drive\Model\DriveItems\FolderInfo.cs" />
     <Compile Include="Drive\Model\DriveItems\ParentReference.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Authentication\ViewModels\LoginDialogViewModel.cs" />

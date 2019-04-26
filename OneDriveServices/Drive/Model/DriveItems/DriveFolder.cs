@@ -12,12 +12,12 @@ namespace OneDriveServices.Drive.Model.DriveItems
 {
     public class DriveFolder : DriveItem
     {
-        [JsonProperty("folder/childCount")]
-        public int ChildCount { get; set; }
+        [JsonProperty(PropertyName = "folder")]
+        public FolderInfo Properties { get; set; }
 
         public async Task<List<DriveItem>> GetChildrenAsync()
         {
-            var cachedItems = DriveService.Instance.Cache.GetChildrenOf(Id);
+            var cachedItems = DriveService.Instance.Cache.GetChildren(Id);
             if (cachedItems != null)
             {
                 return cachedItems;
@@ -46,7 +46,11 @@ namespace OneDriveServices.Drive.Model.DriveItems
                     var childList = children.Select(c => c["folder"] == null ? c.ToObject<DriveFile>() as DriveItem
                         : c.ToObject<DriveFolder>() as DriveItem).ToList();
 
-                    DriveService.Instance.Cache.AddChildrenToItem(Id, childList);
+                    foreach (var child in childList)
+                    {
+                        DriveService.Instance.Cache.AddItem(child);
+                    }
+                    
                     return childList;
                 }
 
@@ -58,7 +62,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         {
             var obj = JsonConvert.DeserializeObject<DriveFolder>(json);
             UpdateCommonData(obj);
-            ChildCount = obj.ChildCount;
+            Properties = obj.Properties;
         }
     }
 }
