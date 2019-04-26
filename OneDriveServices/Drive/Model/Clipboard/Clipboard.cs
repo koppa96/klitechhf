@@ -11,5 +11,6 @@ namespace OneDriveServices.Drive.Model.Clipboard
     {
         public DriveItem Content { get; set; }
         public IClipboardOperation Operation { get; set; }
+        public bool Empty => Content == null;
     }
 }
