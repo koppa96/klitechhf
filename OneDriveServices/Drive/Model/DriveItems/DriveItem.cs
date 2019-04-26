@@ -72,7 +72,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 
                 var content = new JObject
                 {
-                    "name", newName
+                    { "name", newName }
                 };
                 request.Content = new StringContent(content.ToString(), Encoding.UTF8, "application/json");
 

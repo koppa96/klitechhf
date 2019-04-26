@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Windows.ApplicationModel.Activation;
+using KlitechHf.Services;
 using Microsoft.Practices.Unity;
 using Prism.Unity.Windows;
 
@@ -21,6 +22,7 @@ namespace KlitechHf
 
         protected override async Task OnInitializeAsync(IActivatedEventArgs args)
         {
+            Container.RegisterType<DialogService>();
             Container.RegisterInstance(NavigationService);
             Container.RegisterInstance(SessionStateService);
 
