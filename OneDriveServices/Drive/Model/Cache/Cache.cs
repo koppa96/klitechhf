@@ -21,116 +21,146 @@ namespace OneDriveServices.Drive.Model.Cache
             _itemStorage = new Dictionary<string, CacheItem>();
         }
 
-        
         public void AddItem(DriveItem item)
         {
-            _itemStorage.Add(item.Id, new CacheItem
+            //Adding the item to the cache
+            CacheItem cachedItem;
+            if (_itemStorage.ContainsKey(item.Id))
             {
-                Item = item
-            });
-        }
-
-        public void AddChildrenToItem(string id, List<DriveItem> children)
-        {
-            _itemStorage[id].Children = children;
-            UpdateItems(children);
-        }
-
-        private void UpdateItems(IEnumerable<DriveItem> items)
-        {
-            if (items == null)
-            {
-                return;
+                cachedItem = _itemStorage[item.Id];
+                cachedItem.Item = item;
             }
-
-            foreach (var child in items)
+            else
             {
-                if (_itemStorage.ContainsKey(child.Id))
+                cachedItem = new CacheItem(item);
+                _itemStorage.Add(item.Id, cachedItem);
+            }
+            
+            //Adding the item to its parent's children
+            if (_itemStorage.ContainsKey(item.Parent.Id))
+            {
+                var parent = _itemStorage[item.Parent.Id];
+
+                if (parent.Children == null)
                 {
-                    _itemStorage[child.Id].Item = child;
+                    parent.Children = new List<CacheItem>();
+                }
+
+                if (parent.Children.Any(c => c.Item.Id == item.Id))
+                {
+                    var index = parent.Children.FindIndex(c => c.Item.Id == item.Id);
+                    parent.Children[index].Item = item;
                 }
                 else
                 {
-                    AddItem(child);
+                    parent.Children.Add(cachedItem);
+                }
+            }
+            
+            //Adding the item's children
+            foreach (var value in _itemStorage.Values)
+            {
+                if (value.Item.Parent.Id == item.Id)
+                {
+                    value.Children.Add(value);
                 }
             }
         }
 
-        /// <summary>
-        /// Gets the cached DriveItem with the given ID
-        /// </summary>
-        /// <param name="id">The identifier of the DriveItem</param>
-        /// <returns>The DriveItem</returns>
-        public DriveItem GetItem(string id)
+        public void RemoveItem(string itemId)
         {
-            if (_itemStorage.ContainsKey(id))
+            if (_itemStorage.ContainsKey(itemId))
             {
-                return _itemStorage[id].Item;
+                var cachedItem = _itemStorage[itemId];
+                if (_itemStorage.ContainsKey(cachedItem.Item.Parent.Id))
+                {
+                    var parent = _itemStorage[cachedItem.Item.Parent.Id];
+                    parent.Children.RemoveAll(c => c.Item.Id == itemId);
+                }
             }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the children of the DriveFolder with the given ID
-        /// </summary>
-        /// <param name="id">The identifier of the folder</param>
-        /// <returns></returns>
-        public List<DriveItem> GetChildrenOf(string id)
-        {
-            if (_itemStorage.ContainsKey(id))
-            {
-                return _itemStorage[id].Children;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Removes all the data from the cache
-        /// </summary>
-        public void Clear()
-        {
-            _itemStorage = new Dictionary<string, CacheItem>();
-            _rootFolder = null;
-        }
-
-        /// <summary>
-        /// Removes the DriveItem from the Cache
-        /// </summary>
-        /// <param name="item">The DriveItem to be removed</param>
-        public void RemoveItem(DriveItem item)
-        {
-            _itemStorage.Remove(item.Id);
-            _itemStorage[item.Parent.Id].Children.Remove(item);
-        }
-
-        public void UpdateItem(DriveItem item)
-        {
-            _itemStorage[item.Id].Item = item;
         }
 
         public void AddRootFolder(DriveFolder folder)
         {
+            if (_itemStorage.ContainsKey(folder.Id))
+            {
+                _itemStorage[folder.Id].Item = folder;
+            }
+            else
+            {
+                _itemStorage.Add(folder.Id, new CacheItem(folder));
+            }
+
             _rootFolder = folder;
-            AddItem(folder);
         }
 
         public DriveFolder GetRootFolder()
         {
             return _rootFolder;
         }
-
-        public void AppendChild(string id, DriveItem item)
+        
+        public T GetItem<T>(string itemId) where T : DriveItem
         {
-            if (_itemStorage[id].Children == null)
+            if (_itemStorage.ContainsKey(itemId))
             {
-                _itemStorage[id].Children = new List<DriveItem> { item };
+                var item = _itemStorage[itemId].Item;
+                return item as T;
             }
-            else
+
+            return null;
+        }
+
+        public List<DriveItem> GetChildren(string parentId)
+        {
+            if (_itemStorage.ContainsKey(parentId))
             {
-                _itemStorage[id].Children.Add(item);
+                var parent = _itemStorage[parentId];
+                var parentItem = (DriveFolder) parent.Item;
+                if (parentItem.Properties.ChildCount != parent.Children.Count)
+                {
+                    return null;
+                }
+
+                return parent.Children.Select(c => c.Item)
+                    .OrderBy(i => i is DriveFile)
+                    .ThenBy(i => i.Name)
+                    .ToList();
             }
+
+            return null;
+        }
+
+        public void MoveItem(string itemId, string targetFolderId)
+        {
+            if (!_itemStorage.ContainsKey(itemId))
+            {
+                return;
+            }
+
+            var cacheItem = _itemStorage[itemId];
+            
+            //Remove the item from its current folder
+            if (_itemStorage.ContainsKey(cacheItem.Item.Parent.Id))
+            {
+                _itemStorage[cacheItem.Item.Parent.Id].Children.RemoveAll(c => c.Item.Id == itemId);
+            }
+
+            //Add it to its new folder            
+            if (_itemStorage.ContainsKey(targetFolderId))
+            {
+                var targetFolder = _itemStorage[targetFolderId];
+                var folder = targetFolder.Item as DriveFolder;
+                folder.Properties.ChildCount++;
+                cacheItem.Item.Parent.Id = targetFolder.Item.Id;
+                cacheItem.Item.Parent.Path = targetFolder.Item.Path;
+                targetFolder.Children.Add(cacheItem);
+            }
+        }
+
+        public void Clear()
+        {
+            _itemStorage.Clear();
+            _rootFolder = null;
         }
     }
 }

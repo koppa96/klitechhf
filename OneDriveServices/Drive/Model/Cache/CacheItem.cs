@@ -10,6 +10,12 @@ namespace OneDriveServices.Drive.Model.Cache
     public class CacheItem
     {
         public DriveItem Item { get; set; }
-        public List<DriveItem> Children { get; set; }
+        public List<CacheItem> Children { get; set; }
+
+        public CacheItem(DriveItem item)
+        {
+            Item = item;
+            Children = new List<CacheItem>();
+        }
     }
 }
