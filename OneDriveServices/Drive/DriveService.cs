@@ -79,6 +79,11 @@ namespace OneDriveServices.Drive
                 return cachedItem;
             }
 
+            return await LoadItemAsync<T>(id);
+        }
+
+        public async Task<T> LoadItemAsync<T>(string id) where T : DriveItem
+        {
             using (var client = new HttpClient())
             {
                 var url = new Url(DriveService.BaseUrl)
@@ -200,6 +205,40 @@ namespace OneDriveServices.Drive
         {
             await ClipBoard.Operation.ExecuteAsync(ClipBoard.Content, targetFolder);
             ClipBoard = new Clipboard();
+        }
+
+        /// <summary>
+        /// Awaits the asynchronous drive operation (e.g. copying) by using a background thread to query if it has finished
+        /// </summary>
+        /// <param name="operationUri">The uri of the asynchronous operation</param>
+        /// <returns></returns>
+        public static async Task AwaitOperationAsync(Uri operationUri)
+        {
+            await Task.Run(async () =>
+            {
+                using (var client = new HttpClient())
+                {
+                    while (true)
+                    {
+                        var response = await client.GetAsync(operationUri);
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var json = await response.Content.ReadAsStringAsync();
+                            var progress = JsonConvert.DeserializeObject<DriveOperation>(json);
+                            if (progress.Status == "completed")
+                            {
+                                return;
+                            }
+
+                            await Task.Delay(1000);
+                        }
+                        else
+                        {
+                            throw new WebException(await response.Content.ReadAsStringAsync());
+                        }
+                    }
+                }
+            });
         }
     }
 }

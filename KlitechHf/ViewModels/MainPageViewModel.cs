@@ -94,18 +94,7 @@ namespace KlitechHf.ViewModels
 
         private async void PasteHereAsync()
         {
-            if (_removeItemOnPaste)
-            {
-                Children.Remove(_drive.ClipBoard.Content);
-            }
 
-            var item = _drive.ClipBoard.Content;
-            await _drive.PasteAsync(CurrentFolder);
-
-            if (item is DriveFolder)
-            {
-                int index = Children.
-            }
         }
 
         private async void PasteAsync(DriveFolder folder)

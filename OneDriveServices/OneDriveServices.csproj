@@ -127,6 +127,7 @@
     <Compile Include="Drive\Model\Cache\CacheItem.cs" />
     <Compile Include="Drive\Model\Clipboard\Clipboard.cs" />
     <Compile Include="Drive\Model\Clipboard\ClipboardItem.cs" />
+    <Compile Include="Drive\Model\Clipboard\DriveOperation.cs" />
     <Compile Include="Drive\Model\Clipboard\MoveOperation.cs" />
     <Compile Include="Drive\Model\Clipboard\IClipboardOperation.cs" />
     <Compile Include="Drive\Model\Clipboard\CopyOperation.cs" />

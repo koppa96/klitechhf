@@ -40,7 +40,9 @@ namespace OneDriveServices.Drive.Model.Clipboard
                 var response = await Task.Run(() => client.SendAsync(request));
                 if (response.IsSuccessStatusCode)
                 {
-                    DriveService.Instance.Cache.RemoveItem(target.Id);
+                    var operationUri = response.Headers.Location;
+                    await DriveService.AwaitOperationAsync(operationUri);
+                    await DriveService.Instance.LoadItemAsync<DriveFolder>(target.Id);
                     return;
                 }
                 

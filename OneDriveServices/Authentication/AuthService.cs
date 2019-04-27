@@ -59,6 +59,8 @@ namespace OneDriveServices.Authentication
             _refreshToken = null;
             _container.Values["refresh_token"] = null;
             DriveService.Instance.Cache.Clear();
+            
+            //TODO: Cancel copy listening tasks
         }
 
         public AuthenticationHeaderValue CreateAuthenticationHeader()
