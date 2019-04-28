@@ -14,6 +14,7 @@ using KlitechHf.Model;
 using KlitechHf.Services;
 using KlitechHf.Utility;
 using OneDriveServices.Authentication;
+using OneDriveServices.Authentication.Model;
 using OneDriveServices.Drive;
 using OneDriveServices.Drive.Model.DriveItems;
 using Prism.Commands;
@@ -30,6 +31,7 @@ namespace KlitechHf.ViewModels
         private DriveFolder _currentFolder;
         private ObservableCollection<DriveItem> _children;
         private bool _isLoading, _removeItemOnPaste;
+        private User _currentUser;
 
         public DriveFolder CurrentFolder {
             get => _currentFolder;
@@ -55,6 +57,15 @@ namespace KlitechHf.ViewModels
             set
             {
                 _isLoading = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public User CurrentUser {
+            get => _currentUser;
+            set
+            {
+                _currentUser = value; 
                 RaisePropertyChanged();
             }
         }
@@ -150,6 +161,7 @@ namespace KlitechHf.ViewModels
                 await _drive.UploadAsync(CurrentFolder, file.Name, content.ToArray());
             }
 
+            await ReloadContentAsync();
             IsLoading = false;
         }
 
@@ -226,9 +238,13 @@ namespace KlitechHf.ViewModels
         private async Task LoginAsync()
         {
             IsLoading = true;
+
             await AuthService.Instance.LoginAsync();
+            CurrentUser = AuthService.Instance.CurrentUser;
+
             CurrentFolder = await _drive.GetRootAsync();
             Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
+
             IsLoading = false;
         }
 

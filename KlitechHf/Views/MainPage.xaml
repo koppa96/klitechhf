@@ -73,5 +73,10 @@
                 Grid.Row="0"
                 Grid.Column="2"
                 Command="{Binding LogoutCommand}"/>
+
+        <Button Content="Upload"
+                Grid.Row="1"
+                Grid.Column="2"
+                Command="{Binding UploadCommand}"/>
     </Grid>
 </Page>

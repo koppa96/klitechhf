@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace OneDriveServices.Drive
     public class DriveService
     {
         public const string BaseUrl = "https://graph.microsoft.com/v1.0/me/drive";
+        private const int ChunkSize = 62914560;
 
         private static DriveService _instance;
         public static DriveService Instance => _instance ?? (_instance = new DriveService());
@@ -187,30 +189,89 @@ namespace OneDriveServices.Drive
         /// <param name="parent">The parent folder of the new file</param>
         /// <param name="filename">The name of the file</param>
         /// <param name="content">The content of the file</param>
-        /// <returns>A task representing the operation</returns>
+        /// <returns>The uploaded file</returns>
         public async Task<DriveFile> UploadAsync(DriveFolder parent, string filename, byte[] content)
         {
             using (var client = new HttpClient())
             {
                 var url = new Url(BaseUrl)
-                    .AppendPathSegments("items", $"{parent.Id}:", $"{filename}:", "content");
+                    .AppendPathSegments("items", $"{parent.Id}:", $"{filename}:", "createUploadSession");
 
-                var request = new HttpRequestMessage(HttpMethod.Put, url.ToUri());
+                var request = new HttpRequestMessage(HttpMethod.Post, url.ToUri());
                 request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
-                request.Content = new ByteArrayContent(content);
 
+                // Starting the download session
                 var response = await Task.Run(() => client.SendAsync(request));
                 if (response.IsSuccessStatusCode)
                 {
-                    var json = await response.Content.ReadAsStringAsync();
-                    var file = JsonConvert.DeserializeObject<DriveFile>(json);
-                    Cache.AddItem(file);
+                    var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
+                    var uploadUrl = obj["uploadUrl"].ToString();
 
-                    return file;
+                    // Calculating the amount of chunks to be sent
+                    var intermediateChunks = content.Length % ChunkSize == 0 ? 
+                        content.Length / ChunkSize - 1 : content.Length / ChunkSize;
+
+                    // Sending all the intermediate chunk
+                    int i;
+                    for (i = 0; i < intermediateChunks; i++)
+                    {
+                        await SendChunkAsync(client, uploadUrl, content, i);
+                    }
+
+                    // Sending the last chunk and returning its result
+                    return await SendLastChunkAsync(client, uploadUrl, content, i);
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());
             }
+        }
+
+        /// <summary>
+        /// Sends a chunk of data with ChunkSize length to the target url.
+        /// </summary>
+        /// <param name="client">The HTTP client to send the chunk</param>
+        /// <param name="uploadUrl">The target URL</param>
+        /// <param name="content">The content to be sent</param>
+        /// <param name="offset">The offset of the sent bytes</param>
+        /// <returns>A task representing the operation</returns>
+        public async Task SendChunkAsync(HttpClient client, string uploadUrl, byte[] content, int offset)
+        {
+            var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUrl);
+            uploadRequest.Content = new ByteArrayContent(content, offset * ChunkSize, ChunkSize);
+            uploadRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(offset * ChunkSize, (offset + 1) * ChunkSize - 1, content.Length);
+
+            var uploadResponse = await Task.Run(() => client.SendAsync(uploadRequest));
+            if (!uploadResponse.IsSuccessStatusCode)
+            {
+                throw new WebException(await uploadResponse.Content.ReadAsStringAsync());
+            }
+        }
+
+        /// <summary>
+        /// Sends the last part of the data and gets the uploaded file
+        /// </summary>
+        /// <param name="client">The HTTP client to send the chunk</param>
+        /// <param name="uploadUrl">The target URL</param>
+        /// <param name="content">The content to be sent</param>
+        /// <param name="offset">The offset of the sent bytes</param>
+        /// <returns>The uploaded file</returns>
+        private async Task<DriveFile> SendLastChunkAsync(HttpClient client, string uploadUrl, byte[] content, int offset)
+        {
+            var lastRequest = new HttpRequestMessage(HttpMethod.Put, uploadUrl);
+            lastRequest.Content = new ByteArrayContent(content, offset * ChunkSize, content.Length - offset * ChunkSize);
+            lastRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(offset * ChunkSize, content.Length - 1, content.Length);
+
+            var lastResponse = await Task.Run(() => client.SendAsync(lastRequest));
+            if (lastResponse.IsSuccessStatusCode)
+            {
+                var json = await lastResponse.Content.ReadAsStringAsync();
+                var file = JsonConvert.DeserializeObject<DriveFile>(json);
+
+                Cache.AddItem(file);
+                return file;
+            }
+
+            throw new WebException(await lastResponse.Content.ReadAsStringAsync());
         }
 
         /// <summary>
