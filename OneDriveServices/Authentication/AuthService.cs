@@ -13,18 +13,22 @@ using OneDriveServices.Drive;
 
 namespace OneDriveServices.Authentication
 {
+    /// <summary>
+    /// A Singleton service for handling user logins and tokens.
+    /// </summary>
     public class AuthService
     {
         private const string TokenEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
-        private string _refreshToken;
+        private string _refreshToken, _accessToken, _scheme;
         private readonly string _clientId, _callbackUrl;
         private readonly ApplicationDataContainer _container;
 
-        public static AuthService Instance { get; } = new AuthService();
-        public string AccessToken { get; set; }
-        public string Scheme { get; set; }
+        private static AuthService _instance;
+        public static AuthService Instance => _instance ?? (_instance = new AuthService());
         public User CurrentUser { get; private set; }
+
+        public event Action UserLoggedOut; 
 
         protected AuthService()
         {
@@ -35,13 +39,17 @@ namespace OneDriveServices.Authentication
             _refreshToken = _container.Values["refresh_token"]?.ToString();
         }
 
+        /// <summary>
+        /// Tries to get access token from the locally stored refresh token. If it fails it shows a login dialog.
+        /// </summary>
+        /// <returns>A task representing the operation</returns>
         public async Task LoginAsync()
         {
             if (_refreshToken != null)
             {
                 await RefreshTokensAsync();
 
-                if (AccessToken == null)
+                if (_accessToken == null)
                 {
                     await ShowLoginDialogAsync();
                 }
@@ -52,20 +60,22 @@ namespace OneDriveServices.Authentication
             }
         }
 
+        /// <summary>
+        /// Logs the current user out. Drops all the tokens and resets the DriveService.
+        /// </summary>
         public void Logout()
         {
             CurrentUser = null;
-            AccessToken = null;
+            _accessToken = null;
             _refreshToken = null;
             _container.Values["refresh_token"] = null;
-            DriveService.Instance.Cache.Clear();
             
-            //TODO: Cancel copy listening tasks
+            UserLoggedOut?.Invoke();
         }
 
         public AuthenticationHeaderValue CreateAuthenticationHeader()
         {
-            return new AuthenticationHeaderValue(Scheme, AccessToken);
+            return new AuthenticationHeaderValue(_scheme, _accessToken);
         }
 
         public async Task ShowLoginDialogAsync()
@@ -128,8 +138,8 @@ namespace OneDriveServices.Authentication
         {
             var tokens = JObject.Parse(response);
 
-            AccessToken = tokens["access_token"].ToString();
-            Scheme = tokens["token_type"].ToString();
+            _accessToken = tokens["access_token"].ToString();
+            _scheme = tokens["token_type"].ToString();
             _refreshToken = tokens["refresh_token"].ToString();
 
             _container.Values["refresh_token"] = _refreshToken;

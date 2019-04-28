@@ -85,8 +85,8 @@ namespace KlitechHf.ViewModels
             OpenCommand = new DelegateCommand<DriveFolder>(OpenSelectedFolderAsync);
             NavigateUpCommand = new DelegateCommand(NavigateUpAsync);
             UploadCommand = new DelegateCommand(UploadAsync);
-            PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync, f => !_drive.ClipBoard.Empty);
-            PasteHereCommand = new DelegateCommand(PasteHereAsync, () => !_drive.ClipBoard.Empty);
+            PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync, f => _drive.ClipBoard.CanExecute);
+            PasteHereCommand = new DelegateCommand(PasteHereAsync, () => _drive.ClipBoard.CanExecute);
 
             IsLoading = false;
             _removeItemOnPaste = false;

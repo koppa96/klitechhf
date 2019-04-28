@@ -1,20 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Flurl;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using OneDriveServices.Authentication;
 using OneDriveServices.Drive.Model.DriveItems;
 
-namespace OneDriveServices.Drive.Model.Clipboard
+namespace OneDriveServices.Drive.Model.Clipboard.Operations
 {
     public class MoveOperation : IClipboardOperation
     {
+        /// <summary>
+        /// Moves the given item into the target folder, and also updates cache
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
         public async Task ExecuteAsync(DriveItem content, DriveFolder target)
         {
             using (var client = new HttpClient())

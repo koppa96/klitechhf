@@ -2,6 +2,9 @@
 
 namespace OneDriveServices.Drive.Model.DriveItems
 {
+    /// <summary>
+    /// Represents the parent of the current item.
+    /// </summary>
     public class ParentReference
     {
         [JsonProperty("id")]

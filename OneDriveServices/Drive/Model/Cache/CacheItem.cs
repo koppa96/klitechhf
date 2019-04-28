@@ -7,6 +7,9 @@ using OneDriveServices.Drive.Model.DriveItems;
 
 namespace OneDriveServices.Drive.Model.Cache
 {
+    /// <summary>
+    /// An element of the cache tree structure. It holds a DriveItem and a List of its children that are present in the cache.
+    /// </summary>
     public class CacheItem
     {
         public DriveItem Item { get; set; }

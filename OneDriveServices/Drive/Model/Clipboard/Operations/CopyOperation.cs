@@ -1,20 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Flurl;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using OneDriveServices.Authentication;
 using OneDriveServices.Drive.Model.DriveItems;
 
-namespace OneDriveServices.Drive.Model.Clipboard
+namespace OneDriveServices.Drive.Model.Clipboard.Operations
 {
     public class CopyOperation : IClipboardOperation
     {
+        /// <summary>
+        /// Executes a copy operation awaits it and reloads the target folder into the cache.
+        /// </summary>
+        /// <param name="content">The item to be moved into the folder</param>
+        /// <param name="target">The target folder</param>
+        /// <returns>A task representing the operation</returns>
         public async Task ExecuteAsync(DriveItem content, DriveFolder target)
         {
             using (var client = new HttpClient())
@@ -41,7 +46,32 @@ namespace OneDriveServices.Drive.Model.Clipboard
                 if (response.IsSuccessStatusCode)
                 {
                     var operationUri = response.Headers.Location;
-                    await DriveService.AwaitOperationAsync(operationUri);
+
+                    // Adding cancellation token for the operation
+                    var tokenSource = new CancellationTokenSource();
+                    DriveService.Instance.CurrentOperations.Add(tokenSource);
+
+                    try
+                    {
+                        // Waiting for the copying to end
+                        await DriveService.AwaitOperationAsync(operationUri, tokenSource.Token);
+                    }
+                    catch (AggregateException ae)
+                    {
+                        // Handling the exception caused by the cancellation.
+                        // Rethrowing the exception if it's not caused by the cancellation
+                        if (ae.InnerExceptions.Any(e => e is TaskCanceledException))
+                        {
+                            return;
+                        }
+
+                        throw;
+                    }
+
+                    // Removing the cancellation token as the operation already ended
+                    DriveService.Instance.CurrentOperations.Remove(tokenSource);
+
+                    // This results the item to be updated in the cache
                     await DriveService.Instance.LoadItemAsync<DriveFolder>(target.Id);
                     return;
                 }

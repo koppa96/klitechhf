@@ -7,6 +7,9 @@ using Newtonsoft.Json;
 
 namespace OneDriveServices.Drive.Model.DriveItems
 {
+    /// <summary>
+    /// Represents the folder specific properties of the DriveItem
+    /// </summary>
     public class FolderInfo
     {
         [JsonProperty("childCount")]

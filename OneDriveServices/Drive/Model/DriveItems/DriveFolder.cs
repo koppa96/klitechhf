@@ -15,6 +15,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
         [JsonProperty(PropertyName = "folder")]
         public FolderInfo Properties { get; set; }
 
+        /// <summary>
+        /// Tries to load the folder's children from the cache. If they are not there or not all of them are there they will be downloaded.
+        /// </summary>
+        /// <returns>The list of children of the item</returns>
         public async Task<List<DriveItem>> GetChildrenAsync()
         {
             var cachedItems = DriveService.Instance.Cache.GetChildren(Id);
@@ -26,6 +30,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
             return await LoadChildrenAsync();
         }
 
+        /// <summary>
+        /// Loads the children of the item from the server and adds the downloaded items to the cache.
+        /// </summary>
+        /// <returns>The list of children of the item</returns>
         public async Task<List<DriveItem>> LoadChildrenAsync()
         {
             using (var client = new HttpClient())
@@ -58,6 +66,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
             }
         }
 
+        /// <summary>
+        /// Creates a new DriveFolder from the given JSON and updates its data with it.
+        /// </summary>
+        /// <param name="json">The JSON representation of the folder</param>
         protected override void Update(string json)
         {
             var obj = JsonConvert.DeserializeObject<DriveFolder>(json);

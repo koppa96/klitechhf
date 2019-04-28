@@ -10,6 +10,9 @@ using OneDriveServices.Authentication;
 
 namespace OneDriveServices.Drive.Model.DriveItems
 {
+    /// <summary>
+    /// An abstract class for the common data and behaviour of the Drive Items.
+    /// </summary>
     public abstract class DriveItem
     {
         [JsonProperty(PropertyName = "id")]
@@ -27,7 +30,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         public string Path => (Parent.Path == null ? "/drive" : "") + Url.Decode(Parent.Path, false) + "/" + Name;//Parent.Path + "/" + Name;
 
         /// <summary>
-        /// Tries to load its parent from the local cache. If it doesn't exist then it downloads it from the drive
+        /// Tries to load its parent from the local cache. If it doesn't exist then it downloads it from the drive.
         /// </summary>
         /// <returns>The parent of the current item</returns>
         public async Task<DriveFolder> GetParentAsync()
@@ -40,6 +43,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
             return await DriveService.Instance.GetItemAsync<DriveFolder>(Parent.Id);
         }
 
+        /// <summary>
+        /// Deletes the item from the drive and removes itself from the cache.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation</returns>
         public async Task DeleteAsync()
         {
             using (var client = new HttpClient())
@@ -60,6 +67,11 @@ namespace OneDriveServices.Drive.Model.DriveItems
             }
         }
 
+        /// <summary>
+        /// Renames the item on the server and updates its data locally.
+        /// </summary>
+        /// <param name="newName"></param>
+        /// <returns></returns>
         public async Task RenameAsync(string newName)
         {
             using (var client = new HttpClient())
@@ -85,8 +97,16 @@ namespace OneDriveServices.Drive.Model.DriveItems
             }
         }
 
+        /// <summary>
+        /// Updates the item's data from a JSON
+        /// </summary>
+        /// <param name="json">The JSON representation of the item</param>
         protected abstract void Update(string json);
 
+        /// <summary>
+        /// Updates the common data from the given DriveItem
+        /// </summary>
+        /// <param name="newItem">The DriveItem containing the new data</param>
         protected void UpdateCommonData(DriveItem newItem)
         {
             Id = newItem.Id;

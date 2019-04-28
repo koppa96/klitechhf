@@ -128,9 +128,9 @@
     <Compile Include="Drive\Model\Clipboard\Clipboard.cs" />
     <Compile Include="Drive\Model\Clipboard\ClipboardItem.cs" />
     <Compile Include="Drive\Model\Clipboard\DriveOperation.cs" />
-    <Compile Include="Drive\Model\Clipboard\MoveOperation.cs" />
-    <Compile Include="Drive\Model\Clipboard\IClipboardOperation.cs" />
-    <Compile Include="Drive\Model\Clipboard\CopyOperation.cs" />
+    <Compile Include="Drive\Model\Clipboard\Operations\MoveOperation.cs" />
+    <Compile Include="Drive\Model\Clipboard\Operations\IClipboardOperation.cs" />
+    <Compile Include="Drive\Model\Clipboard\Operations\CopyOperation.cs" />
     <Compile Include="Drive\Model\DriveItems\DriveFile.cs" />
     <Compile Include="Drive\Model\DriveItems\DriveFolder.cs" />
     <Compile Include="Drive\Model\DriveItems\DriveItem.cs" />

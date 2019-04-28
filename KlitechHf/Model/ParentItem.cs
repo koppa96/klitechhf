@@ -7,6 +7,9 @@ using OneDriveServices.Drive.Model.DriveItems;
 
 namespace KlitechHf.Model
 {
+    /// <summary>
+    /// An item that represents the navigate element in the list.
+    /// </summary>
     public class ParentItem : DriveItem
     {
         protected override void Update(string json)

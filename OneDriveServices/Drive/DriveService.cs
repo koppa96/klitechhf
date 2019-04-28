@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Flurl;
@@ -15,30 +16,53 @@ using OneDriveServices.Authentication;
 using OneDriveServices.Drive.Model;
 using OneDriveServices.Drive.Model.Cache;
 using OneDriveServices.Drive.Model.Clipboard;
+using OneDriveServices.Drive.Model.Clipboard.Operations;
 using OneDriveServices.Drive.Model.DriveItems;
 
 namespace OneDriveServices.Drive
 {
+    /// <summary>
+    /// A Singleton service for accessing the drive of the currently logged in user of the AuthService.
+    /// </summary>
     public class DriveService
     {
         public const string BaseUrl = "https://graph.microsoft.com/v1.0/me/drive";
 
-        public static DriveService Instance { get; set; } = new DriveService();
+        private static DriveService _instance;
+        public static DriveService Instance => _instance ?? (_instance = new DriveService());
 
-        public Clipboard ClipBoard { get; set; }
-        public string DriveId { get; set; }
-        public Cache Cache { get; set; }
+        public Clipboard ClipBoard { get; }
+        public string DriveId { get; private set; }
+        public Cache Cache { get; }
+        public List<CancellationTokenSource> CurrentOperations { get; }
 
         protected DriveService()
         {
             Cache = new Cache();
             ClipBoard = new Clipboard();
+            AuthService.Instance.UserLoggedOut += OnUserLogout;
+            CurrentOperations = new List<CancellationTokenSource>();
         }
 
         /// <summary>
-        /// Loads the root folder of the drive
+        /// Cancels the monitoring of the current user's asynchronous operations and clears the service's data
         /// </summary>
-        /// <returns>A task representing the loading</returns>
+        private void OnUserLogout()
+        {
+            foreach (var operation in CurrentOperations)
+            {
+                operation.Cancel();
+            }
+
+            Cache.Clear();
+            ClipBoard.Clear();
+            DriveId = null;
+        }
+
+        /// <summary>
+        /// Tries to get the root folder of the drive from the cache. If it doesn't exist it will be loaded from the server.
+        /// </summary>
+        /// <returns>The root folder of the drive</returns>
         public async Task<DriveFolder> GetRootAsync()
         {
             var cachedFolder = Cache.GetRootFolder();
@@ -71,6 +95,12 @@ namespace OneDriveServices.Drive
             }
         }
 
+        /// <summary>
+        /// Tries to load the item from the cache, and if it's not there it loads from the server
+        /// </summary>
+        /// <typeparam name="T">The type of the desired DriveItem</typeparam>
+        /// <param name="id">The identifier of the item</param>
+        /// <returns></returns>
         public async Task<T> GetItemAsync<T>(string id) where T : DriveItem
         {
             var cachedItem = Cache.GetItem<T>(id);
@@ -82,6 +112,12 @@ namespace OneDriveServices.Drive
             return await LoadItemAsync<T>(id);
         }
 
+        /// <summary>
+        /// Loads the desired item from the server
+        /// </summary>
+        /// <typeparam name="T">The type of the desired DriveItem</typeparam>
+        /// <param name="id">The identifier of the item</param>
+        /// <returns></returns>
         public async Task<T> LoadItemAsync<T>(string id) where T : DriveItem
         {
             using (var client = new HttpClient())
@@ -190,7 +226,7 @@ namespace OneDriveServices.Drive
         /// <summary>
         /// Places an item to the clipboard with a move operation. The item will be moved when PasteAsync is called.
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">The DriveItem to be placed on the clipboard</param>
         public void Cut(DriveItem item)
         {
             ClipBoard.Content = item;
@@ -198,21 +234,23 @@ namespace OneDriveServices.Drive
         }
 
         /// <summary>
-        /// Executes the clipboard operation with
+        /// Executes the clipboard operation
         /// </summary>
-        /// <returns></returns>
+        /// <param name="targetFolder">The target folder of the operation</param>
+        /// <returns>A task representing the operation</returns>
         public async Task PasteAsync(DriveFolder targetFolder)
         {
-            await ClipBoard.Operation.ExecuteAsync(ClipBoard.Content, targetFolder);
-            ClipBoard = new Clipboard();
+            await ClipBoard.ExecuteAsync(targetFolder);
+            ClipBoard.Clear();
         }
 
         /// <summary>
         /// Awaits the asynchronous drive operation (e.g. copying) by using a background thread to query if it has finished
         /// </summary>
         /// <param name="operationUri">The uri of the asynchronous operation</param>
-        /// <returns></returns>
-        public static async Task AwaitOperationAsync(Uri operationUri)
+        /// <param name="token">A token to cancel the operation</param>
+        /// <returns>A task representing the waiting</returns>
+        public static async Task AwaitOperationAsync(Uri operationUri, CancellationToken token = default)
         {
             await Task.Run(async () =>
             {
@@ -220,7 +258,7 @@ namespace OneDriveServices.Drive
                 {
                     while (true)
                     {
-                        var response = await client.GetAsync(operationUri);
+                        var response = await client.GetAsync(operationUri, token);
                         if (response.IsSuccessStatusCode)
                         {
                             var json = await response.Content.ReadAsStringAsync();
@@ -230,7 +268,7 @@ namespace OneDriveServices.Drive
                                 return;
                             }
 
-                            await Task.Delay(1000);
+                            await Task.Delay(1000, token);
                         }
                         else
                         {
@@ -238,7 +276,7 @@ namespace OneDriveServices.Drive
                         }
                     }
                 }
-            });
+            }, token);
         }
     }
 }

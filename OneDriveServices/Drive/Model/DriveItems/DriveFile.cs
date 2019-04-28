@@ -12,6 +12,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
         [JsonProperty(PropertyName = "size")]
         public int Size { get; set; }
 
+        /// <summary>
+        /// Asynchronously downloads the file.
+        /// </summary>
+        /// <returns>The bytes of the file</returns>
         public async Task<byte[]> DownloadAsync()
         {
             using (var client = new HttpClient())
@@ -32,6 +36,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
             }
         }
 
+        /// <summary>
+        /// Creates a new DriveFile from the given JSON and updates its own content with it.
+        /// </summary>
+        /// <param name="json">The JSON representation of the file</param>
         protected override void Update(string json)
         {
             var obj = JsonConvert.DeserializeObject<DriveFile>(json);

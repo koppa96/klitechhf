@@ -2,6 +2,9 @@ using Newtonsoft.Json;
 
 namespace OneDriveServices.Drive.Model.Clipboard
 {
+    /// <summary>
+    /// Represents the asynchronous drive operation (e.g. copying) state
+    /// </summary>
     public class DriveOperation
     {
         [JsonProperty(PropertyName = "operation")]

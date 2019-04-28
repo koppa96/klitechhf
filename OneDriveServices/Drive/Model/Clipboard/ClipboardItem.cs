@@ -8,6 +8,9 @@ using OneDriveServices.Drive.Model.DriveItems;
 
 namespace OneDriveServices.Drive.Model.Clipboard
 {
+    /// <summary>
+    /// A request object that is needed for clipboard operation requests.
+    /// </summary>
     public class ClipboardItem
     {
         [JsonProperty(PropertyName = "name")]
