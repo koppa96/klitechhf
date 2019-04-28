@@ -16,11 +16,12 @@ namespace KlitechHf.Services
             {
                 Title = "Enter a name",
                 Content = new TextBox(),
-                CloseButtonText = "Ok"
+                PrimaryButtonText = "Ok",
+                CloseButtonText = "Cancel"
             };
 
-            await dialog.ShowAsync();
-            return (dialog.Content as TextBox)?.Text;
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary ? (dialog.Content as TextBox)?.Text : null;
         }
 
         public async Task<bool> ShowConfirmationDialogAsync(string message)
@@ -51,6 +52,18 @@ namespace KlitechHf.Services
             folderPicker.FileTypeFilter.Add("*");
 
             return await folderPicker.PickSingleFolderAsync();
+        }
+
+        public async Task ShowNameConflictErrorAsync()
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = "There is already a file with that name there.",
+                CloseButtonText = "Ok"
+            };
+
+            await dialog.ShowAsync();
         }
     }
 }

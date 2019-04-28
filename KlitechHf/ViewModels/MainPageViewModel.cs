@@ -12,6 +12,7 @@ using Windows.Storage.Pickers;
 using Windows.UI.Xaml.Data;
 using KlitechHf.Model;
 using KlitechHf.Services;
+using KlitechHf.Utility;
 using OneDriveServices.Authentication;
 using OneDriveServices.Drive;
 using OneDriveServices.Drive.Model.DriveItems;
@@ -94,17 +95,49 @@ namespace KlitechHf.ViewModels
 
         private async void PasteHereAsync()
         {
-
+            PasteAsync(CurrentFolder);
         }
 
         private async void PasteAsync(DriveFolder folder)
         {
+            var children = await folder.GetChildrenAsync();
+            if (children.Any(c => c.Name == _drive.ClipBoard.Content.Name))
+            {
+                await _dialogService.ShowNameConflictErrorAsync();
+                return;
+            } 
+
             if (_removeItemOnPaste)
             {
                 Children.Remove(_drive.ClipBoard.Content);
             }
 
-            await _drive.PasteAsync(folder);
+            try
+            {
+                await _drive.PasteAsync(folder);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+
+            if (CurrentFolder.Id == folder.Id)
+            {
+                await ReloadContentAsync();
+            }
+        }
+
+        private async Task ReloadContentAsync()
+        {
+            IsLoading = true;
+            CurrentFolder = await _drive.GetItemAsync<DriveFolder>(CurrentFolder.Id);
+            Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
+            if (CurrentFolder.Parent.Id != null)
+            {
+                Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
+            }
+
+            IsLoading = false;
         }
 
         private async void UploadAsync()
@@ -127,7 +160,7 @@ namespace KlitechHf.ViewModels
             Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
             if (CurrentFolder.Parent.Id != null)
             {
-                Children.Insert(0, new ParentItem { Id = CurrentFolder.Parent.Id });
+                Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
             }
 
             IsLoading = false;
@@ -138,7 +171,7 @@ namespace KlitechHf.ViewModels
             IsLoading = true;
             CurrentFolder = folder;
             Children = new ObservableCollection<DriveItem>(await folder.GetChildrenAsync());
-            Children.Insert(0, new ParentItem { Id = CurrentFolder.Parent.Id });
+            Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
             IsLoading = false;
         }
 
@@ -167,6 +200,17 @@ namespace KlitechHf.ViewModels
         private async void RenameSelectedItemAsync(DriveItem item)
         {
             var name = await _dialogService.ShowRenameDialogAsync();
+            if (name == null)
+            {
+                return;
+            }
+
+            if (Children.Any(c => c.Name == name))
+            {
+                await _dialogService.ShowNameConflictErrorAsync();
+                return;
+            }
+
             await item.RenameAsync(name);
 
             var index = Children.IndexOf(item);

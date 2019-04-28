@@ -70,8 +70,8 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// <summary>
         /// Renames the item on the server and updates its data locally.
         /// </summary>
-        /// <param name="newName"></param>
-        /// <returns></returns>
+        /// <param name="newName">The new name of the item</param>
+        /// <returns>A task representing the operation</returns>
         public async Task RenameAsync(string newName)
         {
             using (var client = new HttpClient())

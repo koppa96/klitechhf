@@ -19,6 +19,7 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
         /// </summary>
         /// <param name="content">The item to be moved into the folder</param>
         /// <param name="target">The target folder</param>
+        /// <exception cref="TaskCanceledException">Throws exception upon canceling the monitoring task</exception>
         /// <returns>A task representing the operation</returns>
         public async Task ExecuteAsync(DriveItem content, DriveFolder target)
         {
@@ -51,22 +52,9 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
                     var tokenSource = new CancellationTokenSource();
                     DriveService.Instance.CurrentOperations.Add(tokenSource);
 
-                    try
-                    {
-                        // Waiting for the copying to end
-                        await DriveService.AwaitOperationAsync(operationUri, tokenSource.Token);
-                    }
-                    catch (AggregateException ae)
-                    {
-                        // Handling the exception caused by the cancellation.
-                        // Rethrowing the exception if it's not caused by the cancellation
-                        if (ae.InnerExceptions.Any(e => e is TaskCanceledException))
-                        {
-                            return;
-                        }
 
-                        throw;
-                    }
+                    // Waiting for the copying to end
+                    await DriveService.AwaitOperationAsync(operationUri, tokenSource.Token);
 
                     // Removing the cancellation token as the operation already ended
                     DriveService.Instance.CurrentOperations.Remove(tokenSource);

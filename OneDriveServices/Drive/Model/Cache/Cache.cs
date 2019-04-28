@@ -34,6 +34,7 @@ namespace OneDriveServices.Drive.Model.Cache
             {
                 cachedItem = _itemStorage[item.Id];
                 cachedItem.Item = item;
+                return;
             }
             else
             {
