@@ -30,10 +30,11 @@
     
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch"
-          Padding="50">
+          Padding="30">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="5*"/>
+            <RowDefinition Height="0.2*"/>
+            <RowDefinition Height="4*"/>
         </Grid.RowDefinitions>
 
         <Grid Grid.Row="0">
@@ -43,10 +44,58 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Text="{Binding CurrentFolder.Path, Mode=OneWay}"
-                       Grid.Row="0"
-                       VerticalAlignment="Center"
-                       FontSize="18"/>
+            <Grid Grid.Row="0">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <ListView ItemsSource="{Binding NavigationItems}"
+                          ItemTemplate="{StaticResource NavigationTemplate}"
+                          VerticalAlignment="Center"
+                          Grid.Column="0">
+
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+
+                </ListView>
+
+                <RelativePanel Grid.Column="1">
+                    <Viewbox x:Name="ProfileIcon"
+                             RelativePanel.AlignVerticalCenterWithPanel="True"
+                             MaxWidth="40"
+                             MaxHeight="40">
+                        <SymbolIcon Symbol="Contact"/>
+                    </Viewbox>
+
+                    <TextBlock x:Name="NameTextBlock"
+                               Margin="10 0 0 0"
+                               RelativePanel.AlignTopWith="ProfileIcon"
+                               RelativePanel.RightOf="ProfileIcon"
+                               Text="{Binding CurrentUser.DisplayName}"/>
+
+                    <TextBlock x:Name="EmailTextBlock"
+                               Margin="10 0 0 0"
+                               RelativePanel.AlignLeftWith="NameTextBlock"
+                               RelativePanel.Below="NameTextBlock"
+                               Text="{Binding CurrentUser.Email}"/>
+
+                    <Button x:Name="LogoutButton"
+                            RelativePanel.AlignRightWithPanel="True"
+                            RelativePanel.AlignVerticalCenterWithPanel="True"
+                            Command="{Binding LogoutCommand}">
+                        <StackPanel Orientation="Horizontal" Padding="2">
+                            <SymbolIcon Symbol="BlockContact"/>
+                            <TextBlock Margin="10 0 0 0" Text="Log out"/>
+                        </StackPanel>
+                    </Button>
+                </RelativePanel>
+
+            </Grid>
 
             <RelativePanel Grid.Row="1">
 
@@ -80,14 +129,60 @@
                     </StackPanel>
                 </Button>
 
+                <Button x:Name="RefreshButton"
+                        Command="{Binding RefreshCommand}"
+                        Margin="0 0 10 0"
+                        RelativePanel.LeftOf="PasteHereButton"
+                        RelativePanel.AlignVerticalCenterWith="PasteHereButton">
+                    <StackPanel Orientation="Horizontal" Padding="2">
+                        <SymbolIcon Symbol="Refresh"/>
+                        <TextBlock Margin="10 0 0 0" Text="Refresh"/>
+                    </StackPanel>
+                </Button>
+
+                <StackPanel RelativePanel.AlignVerticalCenterWithPanel="True"
+                            RelativePanel.AlignHorizontalCenterWithPanel="True"
+                            Orientation="Horizontal">
+                    <ProgressRing IsActive="{Binding BackgroundTaskRunning}"/>
+                    <TextBlock Margin="10 0 0 0" Text="{Binding BackgroundTaskName}"/>
+                </StackPanel>
+
             </RelativePanel>
 
+        </Grid>
+
+        <Grid Margin="12 0 12 0"
+              Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.8*"/>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Name"
+                       FontSize="18"
+                       Grid.Column="1"/>
+
+            <TextBlock Text="Last modified"
+                       FontSize="18"
+                       Grid.Column="2"/>
+
+            <TextBlock Text="Type"
+                       FontSize="18"
+                       Grid.Column="3"/>
+
+            <TextBlock Text="Size"
+                       Grid.Column="4"
+                       FontSize="18"
+                       HorizontalAlignment="Right"/>
         </Grid>
 
         <ListView Name="ItemsListView" 
                   ItemsSource="{Binding Children}" 
                   ItemTemplateSelector="{StaticResource DriveItemTemplateSelector}"
-                  Grid.Row="1"
+                  Grid.Row="2"
                   Visibility="{Binding IsLoading, Converter={StaticResource ListVisibilityConverter}}">
 
             <ListView.ItemContainerStyle>
@@ -96,9 +191,18 @@
                 </Style>
             </ListView.ItemContainerStyle>
 
+            <ListView.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Icon="Add" Text="New folder" Command="{Binding NewFolderCommand}" MinWidth="150"/>
+                    <MenuFlyoutItem Icon="Upload" Text="Upload" Command="{Binding UploadCommand}"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Icon="Paste" Text="Paste here" Command="{Binding PasteHereCommand}"/>
+                </MenuFlyout>
+            </ListView.ContextFlyout>
+
         </ListView>
 
-        <ProgressRing Grid.Row="1"
+        <ProgressRing Grid.Row="2"
                       Width="100"
                       Height="100"
                       IsActive="{Binding IsLoading}"/>

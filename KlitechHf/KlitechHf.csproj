@@ -121,6 +121,7 @@
     </Compile>
     <Compile Include="Converters\FileSizeConverter.cs" />
     <Compile Include="Converters\ListVisibilityConverter.cs" />
+    <Compile Include="Model\NavigationItem.cs" />
     <Compile Include="Model\ParentItem.cs" />
     <Compile Include="Resources\DataTemplates.xaml.cs" />
     <Compile Include="Services\DialogService.cs" />

@@ -11,10 +11,22 @@
 
     <convert:FileSizeConverter x:Key="FileSizeConverter"/>
 
+    <DataTemplate x:Key="NavigationTemplate" x:DataType="m:NavigationItem">
+        <StackPanel Orientation="Horizontal" Padding="10 0 10 0">
+            <TextBlock Text="{Binding Name}" FontSize="20"/>
+
+            <i:Interaction.Behaviors>
+                <ic:EventTriggerBehavior EventName="Tapped">
+                    <ic:InvokeCommandAction Command="{Binding ElementName=ThisPage, Path=DataContext.NavigateCommand}" CommandParameter="{Binding}"/>
+                </ic:EventTriggerBehavior>
+            </i:Interaction.Behaviors>
+        </StackPanel>
+    </DataTemplate>
+
     <DataTemplate x:Key="FileTemplate" x:DataType="driveItems:DriveFile">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="0.8*"/>
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="2*"/>
@@ -51,7 +63,7 @@
             </Grid.ContextFlyout>
 
             <i:Interaction.Behaviors>
-                <ic:EventTriggerBehavior EventName="DoubleTapped">
+                <ic:EventTriggerBehavior EventName="Tapped">
                     <ic:InvokeCommandAction Command="{Binding ElementName=ThisPage, Path=DataContext.DownloadCommand}" CommandParameter="{Binding}"/>
                 </ic:EventTriggerBehavior>
             </i:Interaction.Behaviors>
@@ -62,7 +74,7 @@
     <DataTemplate x:Key="FolderTemplate" x:DataType="driveItems:DriveFolder">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="0.8*"/>
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="2*"/>
@@ -106,7 +118,7 @@
     <DataTemplate x:Key="ParentTemplate" x:DataType="m:ParentItem">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="0.8*"/>
                 <ColumnDefinition Width="5*"/>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="2*"/>

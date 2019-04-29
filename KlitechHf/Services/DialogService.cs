@@ -16,10 +16,7 @@ namespace KlitechHf.Services
             var dialog = new ContentDialog
             {
                 Title = "Enter a name",
-                Content = new TextBox
-                {
-                    VerticalContentAlignment = VerticalAlignment.Center
-                },
+                Content = new TextBox(),
                 PrimaryButtonText = "Ok",
                 CloseButtonText = "Cancel"
             };

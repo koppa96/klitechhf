@@ -30,10 +30,13 @@ namespace KlitechHf.ViewModels
         private readonly DialogService _dialogService;
         private DriveFolder _currentFolder;
         private ObservableCollection<DriveItem> _children;
-        private bool _isLoading, _removeItemOnPaste, _canPaste;
+        private ObservableCollection<NavigationItem> _navigationItems;
+        private bool _isLoading, _removeItemOnPaste, _canPaste, _backgroundTaskRunning;
         private User _currentUser;
+        private string _backgroundTaskName;
 
-        public DriveFolder CurrentFolder {
+        public DriveFolder CurrentFolder 
+        {
             get => _currentFolder;
             set
             {
@@ -52,7 +55,8 @@ namespace KlitechHf.ViewModels
             }
         }
 
-        public bool IsLoading {
+        public bool IsLoading 
+        {
             get => _isLoading;
             set
             {
@@ -61,7 +65,8 @@ namespace KlitechHf.ViewModels
             }
         }
 
-        public User CurrentUser {
+        public User CurrentUser 
+        {
             get => _currentUser;
             set
             {
@@ -70,11 +75,41 @@ namespace KlitechHf.ViewModels
             }
         }
 
-        public bool CanPaste {
+        public bool CanPaste 
+        {
             get => _canPaste;
             set
             {
                 _canPaste = value; 
+                RaisePropertyChanged();
+            }
+        }
+
+        public bool BackgroundTaskRunning
+        {
+            get => _backgroundTaskRunning;
+            set
+            {
+                _backgroundTaskRunning = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public string BackgroundTaskName
+        {
+            get => _backgroundTaskName;
+            set
+            {
+                _backgroundTaskName = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public ObservableCollection<NavigationItem> NavigationItems {
+            get => _navigationItems;
+            set
+            {
+                _navigationItems = value;
                 RaisePropertyChanged();
             }
         }
@@ -91,6 +126,8 @@ namespace KlitechHf.ViewModels
         public ICommand PasteCommand { get; }
         public ICommand PasteHereCommand { get; }
         public ICommand NewFolderCommand { get; }
+        public ICommand RefreshCommand { get; }
+        public ICommand NavigateCommand { get; }
 
         public MainPageViewModel(DialogService dialogService)
         {
@@ -103,16 +140,31 @@ namespace KlitechHf.ViewModels
             CutCommand = new DelegateCommand<DriveItem>(CutSelectedItem);
             RenameCommand = new DelegateCommand<DriveItem>(RenameSelectedItemAsync);
             DeleteCommand = new DelegateCommand<DriveItem>(DeleteSelectedItemAsync);
-            DownloadCommand = new DelegateCommand<DriveFile>(DownloadSelectedFileAsync);
+            DownloadCommand = new DelegateCommand<DriveFile>(DownloadFileAsync);
             OpenCommand = new DelegateCommand<DriveFolder>(OpenSelectedFolderAsync);
             NavigateUpCommand = new DelegateCommand(NavigateUpAsync);
             UploadCommand = new DelegateCommand(UploadAsync);
             PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync).ObservesCanExecute(() => CanPaste);
             PasteHereCommand = new DelegateCommand(PasteHereAsync).ObservesCanExecute(() => CanPaste);
             NewFolderCommand = new DelegateCommand(CreateFolderAsync);
+            RefreshCommand = new DelegateCommand(RefreshAsync);
+            NavigateCommand = new DelegateCommand<NavigationItem>(OpenNavigationItemAsync);
 
             IsLoading = false;
             _removeItemOnPaste = false;
+        }
+
+        private async void RefreshAsync()
+        {
+            IsLoading = true;
+            CurrentFolder = await _drive.LoadItemAsync<DriveFolder>(CurrentFolder.Id);
+            Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
+            if (CurrentFolder.Parent.Id != null)
+            {
+                Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
+            }
+
+            IsLoading = false;
         }
 
         private async void CreateFolderAsync()
@@ -124,8 +176,12 @@ namespace KlitechHf.ViewModels
                 return;
             }
 
+            StartBackgroundTask("Creating folder...");
+
             var folder = await _drive.CreateFolderAsync(CurrentFolder, name);
             Children.InsertDriveItemSorted(folder);
+
+            StopBackgroundTask();
         }
 
         private async void PasteHereAsync()
@@ -140,7 +196,9 @@ namespace KlitechHf.ViewModels
             {
                 await _dialogService.ShowNameConflictErrorAsync();
                 return;
-            } 
+            }
+
+            StartBackgroundTask("Pasting...");
 
             if (_removeItemOnPaste)
             {
@@ -149,6 +207,7 @@ namespace KlitechHf.ViewModels
 
             try
             {
+                CanPaste = false;
                 var item = await _drive.PasteAsync(folder);
                 if (CurrentFolder.Id == folder.Id)
                 {
@@ -161,25 +220,18 @@ namespace KlitechHf.ViewModels
             {
                 // Catching the task cancellation exception
             }
-        }
-
-        private async Task ReloadContentAsync()
-        {
-            IsLoading = true;
-            CurrentFolder = await _drive.GetItemAsync<DriveFolder>(CurrentFolder.Id);
-            Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
-            if (CurrentFolder.Parent.Id != null)
+            finally
             {
-                Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
+                StopBackgroundTask();
             }
-
-            IsLoading = false;
         }
 
         private async void UploadAsync()
         {
             var files = await _dialogService.ShowFilePickerAsync();
-            IsLoading = true;
+
+            StartBackgroundTask("Uploading...");
+
             foreach (var file in files)
             {
                 var content = await FileIO.ReadBufferAsync(file);
@@ -187,19 +239,22 @@ namespace KlitechHf.ViewModels
                 Children.InsertDriveItemSorted(driveFile);
             }
 
-            await ReloadContentAsync();
-            IsLoading = false;
+            StopBackgroundTask();
         }
 
         private async void NavigateUpAsync()
         {
             IsLoading = true;
+
             CurrentFolder = await CurrentFolder.GetParentAsync();
             Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
             if (CurrentFolder.Parent.Id != null)
             {
                 Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
             }
+
+            var navigationItem = NavigationItems.Single(i => i.Id == CurrentFolder.Id);
+            RemoveLaterNavigationItems(navigationItem);
 
             IsLoading = false;
         }
@@ -208,21 +263,40 @@ namespace KlitechHf.ViewModels
         {
             IsLoading = true;
             CurrentFolder = folder;
+            NavigationItems.Add(new NavigationItem(folder));
             Children = new ObservableCollection<DriveItem>(await folder.GetChildrenAsync());
             Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
             IsLoading = false;
         }
 
-        private async void DownloadSelectedFileAsync(DriveFile file)
+        private async void OpenNavigationItemAsync(NavigationItem item)
+        {
+            IsLoading = true;
+
+            RemoveLaterNavigationItems(item);
+
+            CurrentFolder = await _drive.GetItemAsync<DriveFolder>(item.Id);
+            Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
+            if (CurrentFolder.Parent.Id != null)
+            {
+                Children.InsertDriveItemSorted(new ParentItem { Id = CurrentFolder.Parent.Id });
+            }
+
+            IsLoading = false;
+        }
+
+        private async void DownloadFileAsync(DriveFile file)
         {
             var folder = await _dialogService.ShowFolderPickerAsync();
             if (folder != null)
             {
-                IsLoading = true;
+                StartBackgroundTask("Downloading...");
+
                 var storageFile = await folder.CreateFileAsync(file.Name);
                 var content = await file.DownloadAsync();
                 await FileIO.WriteBytesAsync(storageFile, content);
-                IsLoading = false;
+
+                StopBackgroundTask();
             }
         }
 
@@ -230,8 +304,12 @@ namespace KlitechHf.ViewModels
         {
             if (await _dialogService.ShowConfirmationDialogAsync($"Are you sure want to delete {item.Name}?"))
             {
+                StartBackgroundTask("Deleting...");
+
                 await item.DeleteAsync();
                 Children.Remove(item);
+
+                StopBackgroundTask();
             }
         }
 
@@ -249,11 +327,15 @@ namespace KlitechHf.ViewModels
                 return;
             }
 
+            StartBackgroundTask("Renaming...");
+
             await item.RenameAsync(name);
 
             var index = Children.IndexOf(item);
             Children.Remove(item);
             Children.Insert(index, item);
+
+            StopBackgroundTask();
         }
 
         public override async void OnNavigatedTo(NavigatedToEventArgs e, Dictionary<string, object> viewModelState)
@@ -269,6 +351,14 @@ namespace KlitechHf.ViewModels
             CurrentUser = AuthService.Instance.CurrentUser;
 
             CurrentFolder = await _drive.GetRootAsync();
+            NavigationItems = new ObservableCollection<NavigationItem>
+            {
+                new NavigationItem
+                {
+                    Id = CurrentFolder.Id,
+                    Name = "Root"
+                }
+            };
             Children = new ObservableCollection<DriveItem>(await CurrentFolder.GetChildrenAsync());
 
             IsLoading = false;
@@ -294,8 +384,29 @@ namespace KlitechHf.ViewModels
             CurrentUser = null;
             CurrentFolder = null;
             Children.Clear();
+            NavigationItems.Clear();
             AuthService.Instance.Logout();
             await LoginAsync();
+        }
+
+        private void StartBackgroundTask(string name)
+        {
+            BackgroundTaskRunning = true;
+            BackgroundTaskName = name;
+        }
+
+        private void StopBackgroundTask()
+        {
+            BackgroundTaskRunning = false;
+            BackgroundTaskName = null;
+        }
+
+        private void RemoveLaterNavigationItems(NavigationItem item)
+        {
+            for (int i = NavigationItems.Count - 1; i > NavigationItems.IndexOf(item); i--)
+            {
+                NavigationItems.RemoveAt(i);
+            }
         }
     }
 }
