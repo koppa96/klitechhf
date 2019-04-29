@@ -123,11 +123,15 @@
     <Compile Include="Converters\ListVisibilityConverter.cs" />
     <Compile Include="Model\NavigationItem.cs" />
     <Compile Include="Model\ParentItem.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Resources\DataTemplates.xaml.cs" />
     <Compile Include="Services\DialogService.cs" />
     <Compile Include="Utility\DriveItemTemplateSelector.cs" />
     <Compile Include="Utility\ObservableCollectionExtensions.cs" />
+    <Compile Include="ViewModels\TaskViewModel.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
+    <Compile Include="ViewModels\Navigation.cs" />
+    <Compile Include="ViewModels\UserViewModel.cs" />
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

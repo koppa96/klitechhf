@@ -51,7 +51,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <ListView ItemsSource="{Binding NavigationItems}"
+                <ListView ItemsSource="{Binding Navigation.NavigationItems}"
                           ItemTemplate="{StaticResource NavigationTemplate}"
                           VerticalAlignment="Center"
                           Grid.Column="0">
@@ -76,13 +76,13 @@
                                Margin="10 0 0 0"
                                RelativePanel.AlignTopWith="ProfileIcon"
                                RelativePanel.RightOf="ProfileIcon"
-                               Text="{Binding CurrentUser.DisplayName}"/>
+                               Text="{Binding UserViewModel.CurrentUser.DisplayName}"/>
 
                     <TextBlock x:Name="EmailTextBlock"
                                Margin="10 0 0 0"
                                RelativePanel.AlignLeftWith="NameTextBlock"
                                RelativePanel.Below="NameTextBlock"
-                               Text="{Binding CurrentUser.Email}"/>
+                               Text="{Binding UserViewModel.CurrentUser.Email}"/>
 
                     <Button x:Name="LogoutButton"
                             RelativePanel.AlignRightWithPanel="True"
@@ -143,8 +143,8 @@
                 <StackPanel RelativePanel.AlignVerticalCenterWithPanel="True"
                             RelativePanel.AlignHorizontalCenterWithPanel="True"
                             Orientation="Horizontal">
-                    <ProgressRing IsActive="{Binding BackgroundTaskRunning}"/>
-                    <TextBlock Margin="10 0 0 0" Text="{Binding BackgroundTaskName}"/>
+                    <ProgressRing IsActive="{Binding CurrentTasks.BackgroundTaskRunning}"/>
+                    <TextBlock Margin="10 0 0 0" Text="{Binding CurrentTasks.BackgroundTaskName}"/>
                 </StackPanel>
 
             </RelativePanel>
@@ -183,7 +183,7 @@
                   ItemsSource="{Binding Children}" 
                   ItemTemplateSelector="{StaticResource DriveItemTemplateSelector}"
                   Grid.Row="2"
-                  Visibility="{Binding IsLoading, Converter={StaticResource ListVisibilityConverter}}">
+                  Visibility="{Binding CurrentTasks.IsBusy, Converter={StaticResource ListVisibilityConverter}}">
 
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
@@ -205,7 +205,7 @@
         <ProgressRing Grid.Row="2"
                       Width="100"
                       Height="100"
-                      IsActive="{Binding IsLoading}"/>
+                      IsActive="{Binding CurrentTasks.IsBusy}"/>
 
     </Grid>
 </Page>
