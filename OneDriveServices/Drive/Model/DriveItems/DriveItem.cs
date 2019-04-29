@@ -114,5 +114,26 @@ namespace OneDriveServices.Drive.Model.DriveItems
             LastModified = newItem.LastModified;
             Parent = newItem.Parent;
         }
+
+        /// <summary>
+        /// Deserializes a DriveItem subclass instance from the given json by guessing the type of the item
+        /// </summary>
+        /// <param name="json">The JSON representation of the item</param>
+        /// <returns></returns>
+        public static DriveItem Deserialize(string json)
+        {
+            var obj = JObject.Parse(json);
+            if (obj["folder"] != null)
+            {
+                return obj.ToObject<DriveFolder>();
+            }
+
+            if (obj["file"] != null)
+            {
+                return obj.ToObject<DriveFile>();
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(json), "Unknown item type.");
+        }
     }
 }

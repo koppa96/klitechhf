@@ -98,20 +98,55 @@ namespace OneDriveServices.Drive
         }
 
         /// <summary>
+        /// Tries to load the item from the cache, and if it's not there it loads from the server. Only use this if you have no type information.
+        /// </summary>
+        /// <param name="id">The identifier of the item</param>
+        /// <returns>The item</returns>
+        public async Task<DriveItem> GetItemAsync(string id)
+        {
+            var cachedItem = Cache.GetItem<DriveItem>(id);
+            return cachedItem ?? await LoadItemAsync(id);
+        }
+
+        /// <summary>
         /// Tries to load the item from the cache, and if it's not there it loads from the server
         /// </summary>
         /// <typeparam name="T">The type of the desired DriveItem</typeparam>
         /// <param name="id">The identifier of the item</param>
-        /// <returns></returns>
+        /// <returns>The item</returns>
         public async Task<T> GetItemAsync<T>(string id) where T : DriveItem
         {
             var cachedItem = Cache.GetItem<T>(id);
-            if (cachedItem != null)
-            {
-                return cachedItem;
-            }
+            return cachedItem ?? await LoadItemAsync<T>(id);
+        }
 
-            return await LoadItemAsync<T>(id);
+        /// <summary>
+        /// Loads the desired item from the server if the type of the item is not known
+        /// </summary>
+        /// <param name="id">The identifier of the item</param>
+        /// <returns>The item</returns>
+        public async Task<DriveItem> LoadItemAsync(string id)
+        {
+            using (var client = new HttpClient())
+            {
+                var url = new Url(BaseUrl)
+                    .AppendPathSegments("items", id);
+
+                var request = new HttpRequestMessage(HttpMethod.Get, url.ToUri());
+                request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
+
+                var response = await Task.Run(() => client.SendAsync(request));
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var item = DriveItem.Deserialize(json);
+                    Cache.AddItem(item);
+
+                    return item;
+                }
+
+                throw new WebException(await response.Content.ReadAsStringAsync());
+            }
         }
 
         /// <summary>
@@ -124,7 +159,7 @@ namespace OneDriveServices.Drive
         {
             using (var client = new HttpClient())
             {
-                var url = new Url(DriveService.BaseUrl)
+                var url = new Url(BaseUrl)
                     .AppendPathSegments("items", id);
 
                 var request = new HttpRequestMessage(HttpMethod.Get, url.ToUri());
@@ -134,7 +169,6 @@ namespace OneDriveServices.Drive
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var obj = JObject.Parse(json);
                     var item = JsonConvert.DeserializeObject<T>(json);
 
                     Cache.AddItem(item);
@@ -234,7 +268,7 @@ namespace OneDriveServices.Drive
         /// <param name="content">The content to be sent</param>
         /// <param name="offset">The offset of the sent bytes</param>
         /// <returns>A task representing the operation</returns>
-        public async Task SendChunkAsync(HttpClient client, string uploadUrl, byte[] content, int offset)
+        private async Task SendChunkAsync(HttpClient client, string uploadUrl, byte[] content, int offset)
         {
             var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUrl);
             uploadRequest.Content = new ByteArrayContent(content, offset * ChunkSize, ChunkSize);
@@ -299,10 +333,12 @@ namespace OneDriveServices.Drive
         /// </summary>
         /// <param name="targetFolder">The target folder of the operation</param>
         /// <returns>A task representing the operation</returns>
-        public async Task PasteAsync(DriveFolder targetFolder)
+        public async Task<DriveItem> PasteAsync(DriveFolder targetFolder)
         {
-            await ClipBoard.ExecuteAsync(targetFolder);
+            var item = await ClipBoard.ExecuteAsync(targetFolder);
             ClipBoard.Clear();
+
+            return item;
         }
 
         /// <summary>
@@ -311,9 +347,9 @@ namespace OneDriveServices.Drive
         /// <param name="operationUri">The uri of the asynchronous operation</param>
         /// <param name="token">A token to cancel the operation</param>
         /// <returns>A task representing the waiting</returns>
-        public static async Task AwaitOperationAsync(Uri operationUri, CancellationToken token = default)
+        public static async Task<DriveOperation> AwaitOperationAsync(Uri operationUri, CancellationToken token = default)
         {
-            await Task.Run(async () =>
+            return await Task.Run(async () =>
             {
                 using (var client = new HttpClient())
                 {
@@ -326,7 +362,7 @@ namespace OneDriveServices.Drive
                             var progress = JsonConvert.DeserializeObject<DriveOperation>(json);
                             if (progress.Status == "completed")
                             {
-                                return;
+                                return progress;
                             }
 
                             await Task.Delay(1000, token);

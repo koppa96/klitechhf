@@ -51,8 +51,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
                     var result = JObject.Parse(json);
 
                     var children = result["value"];
-                    var childList = children.Select(c => c["folder"] == null ? c.ToObject<DriveFile>() as DriveItem
-                        : c.ToObject<DriveFolder>() as DriveItem).ToList();
+                    var childList = children.Select(c => Deserialize(c.ToString())).ToList();
 
                     foreach (var child in childList)
                     {
