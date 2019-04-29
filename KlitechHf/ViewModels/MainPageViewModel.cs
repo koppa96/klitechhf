@@ -28,11 +28,20 @@ namespace KlitechHf.ViewModels
     {
         private readonly DriveService _drive;
         private readonly DialogService _dialogService;
+        private bool _canPaste;
 
         public TaskViewModel CurrentTasks { get; set; }
         public NavigationViewModel NavigationViewModel { get; set; }
         public UserViewModel UserViewModel { get; set; }
         public DriveViewModel DriveViewModel { get; set; }
+
+        public bool CanPaste {
+            get => _canPaste;
+            set {
+                _canPaste = value;
+                RaisePropertyChanged();
+            }
+        }
 
         public ICommand LogoutCommand { get; }
         public ICommand CopyCommand { get; }
@@ -67,8 +76,8 @@ namespace KlitechHf.ViewModels
             OpenCommand = new DelegateCommand<DriveFolder>(OpenSelectedFolderAsync);
             NavigateUpCommand = new DelegateCommand(NavigateUpAsync);
             UploadCommand = new DelegateCommand(UploadAsync);
-            PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync).ObservesCanExecute(() => DriveViewModel.CanPaste);
-            PasteHereCommand = new DelegateCommand(PasteHereAsync).ObservesCanExecute(() => DriveViewModel.CanPaste);
+            PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync).ObservesCanExecute(() => CanPaste);
+            PasteHereCommand = new DelegateCommand(PasteHereAsync).ObservesCanExecute(() => CanPaste);
             NewFolderCommand = new DelegateCommand(CreateFolderAsync);
             RefreshCommand = new DelegateCommand(RefreshAsync);
             NavigateCommand = new DelegateCommand<NavigationItem>(OpenNavigationItemAsync);
@@ -113,6 +122,7 @@ namespace KlitechHf.ViewModels
 
             try
             {
+                CanPaste = false;
                 await DriveViewModel.PasteAsync(folder);
             }
             catch (TaskCanceledException)
@@ -122,6 +132,7 @@ namespace KlitechHf.ViewModels
             finally
             {
                 CurrentTasks.StopBackgroundTask();
+                CanPaste = DriveService.Instance.ClipBoard.CanExecute;
             }
         }
 
@@ -222,11 +233,13 @@ namespace KlitechHf.ViewModels
         private void CopySelectedItem(DriveItem item)
         {
             DriveViewModel.CopyItem(item);
+            CanPaste = DriveService.Instance.ClipBoard.CanExecute;
         }
 
         private void CutSelectedItem(DriveItem item)
         {
             DriveViewModel.CutItem(item);
+            CanPaste = DriveService.Instance.ClipBoard.CanExecute;
         }
 
         private async void Logout()

@@ -21,7 +21,7 @@ namespace KlitechHf.ViewModels
     public class DriveViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<DriveItem> _children;
-        private bool _removeItemOnPaste, _canPaste;
+        private bool _removeItemOnPaste;
         private DriveService _drive;
 
         public DriveFolder CurrentFolder { get; set; }
@@ -34,13 +34,7 @@ namespace KlitechHf.ViewModels
             }
         }
 
-        public bool CanPaste {
-            get => _canPaste;
-            set {
-                _canPaste = value;
-                OnPropertyChanged();
-            }
-        }
+        
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -80,14 +74,11 @@ namespace KlitechHf.ViewModels
                 Children.Remove(_drive.ClipBoard.Content);
             }
 
-            CanPaste = false;
             var item = await _drive.PasteAsync(folder);
             if (CurrentFolder.Id == folder.Id)
             {
                 Children.InsertDriveItemSorted(item);
             }
-
-            CanPaste = _drive.ClipBoard.CanExecute;
         }
 
         public async Task UploadFilesAsync(IEnumerable<StorageFile> files)
@@ -159,14 +150,12 @@ namespace KlitechHf.ViewModels
         {
             _removeItemOnPaste = false;
             _drive.Copy(item);
-            CanPaste = _drive.ClipBoard.CanExecute;
         }
 
         public void CutItem(DriveItem item)
         {
             _removeItemOnPaste = true;
             _drive.Cut(item);
-            CanPaste = _drive.ClipBoard.CanExecute;
         }
 
         public void Clear()
