@@ -63,6 +63,8 @@ namespace OneDriveServices.Drive.Model.DriveItems
                     throw new WebException(await response.Content.ReadAsStringAsync());
                 }
 
+                //Reload the parent into the cache
+                await DriveService.Instance.LoadItemAsync<DriveFolder>(Parent.Id);
                 DriveService.Instance.Cache.RemoveItem(Id);
             }
         }

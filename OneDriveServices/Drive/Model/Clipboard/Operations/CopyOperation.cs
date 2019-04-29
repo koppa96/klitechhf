@@ -59,6 +59,9 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
                     // Removing the cancellation token as the operation already ended
                     DriveService.Instance.CurrentOperations.Remove(tokenSource);
 
+                    //This reloads the target folder into the cache to update its values
+                    await DriveService.Instance.LoadItemAsync<DriveFolder>(target.Id);
+
                     // This results the item to be updated in the cache
                     return await DriveService.Instance.GetItemAsync(result.ResourceId);
                 }

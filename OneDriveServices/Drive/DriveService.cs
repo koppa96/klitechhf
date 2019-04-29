@@ -335,10 +335,10 @@ namespace OneDriveServices.Drive
         /// <returns>A task representing the operation</returns>
         public async Task<DriveItem> PasteAsync(DriveFolder targetFolder)
         {
-            var item = await ClipBoard.ExecuteAsync(targetFolder);
+            var task = ClipBoard.ExecuteAsync(targetFolder);
             ClipBoard.Clear();
 
-            return item;
+            return await task;
         }
 
         /// <summary>
