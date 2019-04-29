@@ -140,7 +140,11 @@ namespace OneDriveServices.Drive
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     var item = DriveItem.Deserialize(json);
-                    Cache.AddItem(item);
+
+                    if (item != null)
+                    {
+                        Cache.AddItem(item);
+                    }
 
                     return item;
                 }

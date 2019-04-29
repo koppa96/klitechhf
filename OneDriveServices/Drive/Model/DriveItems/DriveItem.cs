@@ -135,7 +135,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 return obj.ToObject<DriveFile>();
             }
 
-            throw new ArgumentOutOfRangeException(nameof(json), "Unknown item type.");
+            return null;
         }
     }
 }
