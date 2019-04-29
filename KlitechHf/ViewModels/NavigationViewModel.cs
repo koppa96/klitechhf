@@ -11,7 +11,7 @@ using KlitechHf.Model;
 
 namespace KlitechHf.ViewModels
 {
-    public class Navigation : INotifyPropertyChanged
+    public class NavigationViewModel : INotifyPropertyChanged
     {
         private ObservableCollection<NavigationItem> _navigationItems;
 
@@ -26,7 +26,7 @@ namespace KlitechHf.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public Navigation()
+        public NavigationViewModel()
         {
             NavigationItems = new ObservableCollection<NavigationItem>();
         }

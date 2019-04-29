@@ -51,7 +51,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <ListView ItemsSource="{Binding Navigation.NavigationItems}"
+                <ListView ItemsSource="{Binding NavigationViewModel.NavigationItems}"
                           ItemTemplate="{StaticResource NavigationTemplate}"
                           VerticalAlignment="Center"
                           Grid.Column="0">
@@ -180,7 +180,7 @@
         </Grid>
 
         <ListView Name="ItemsListView" 
-                  ItemsSource="{Binding Children}" 
+                  ItemsSource="{Binding DriveViewModel.Children}" 
                   ItemTemplateSelector="{StaticResource DriveItemTemplateSelector}"
                   Grid.Row="2"
                   Visibility="{Binding CurrentTasks.IsBusy, Converter={StaticResource ListVisibilityConverter}}">

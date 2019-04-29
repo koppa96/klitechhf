@@ -128,9 +128,10 @@
     <Compile Include="Services\DialogService.cs" />
     <Compile Include="Utility\DriveItemTemplateSelector.cs" />
     <Compile Include="Utility\ObservableCollectionExtensions.cs" />
+    <Compile Include="ViewModels\DriveViewModel.cs" />
     <Compile Include="ViewModels\TaskViewModel.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />
-    <Compile Include="ViewModels\Navigation.cs" />
+    <Compile Include="ViewModels\NavigationViewModel.cs" />
     <Compile Include="ViewModels\UserViewModel.cs" />
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
