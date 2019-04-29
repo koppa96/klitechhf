@@ -30,7 +30,7 @@ namespace KlitechHf.ViewModels
         private readonly DialogService _dialogService;
         private DriveFolder _currentFolder;
         private ObservableCollection<DriveItem> _children;
-        private bool _isLoading, _removeItemOnPaste;
+        private bool _isLoading, _removeItemOnPaste, _canPaste;
         private User _currentUser;
 
         public DriveFolder CurrentFolder {
@@ -70,6 +70,15 @@ namespace KlitechHf.ViewModels
             }
         }
 
+        public bool CanPaste {
+            get => _canPaste;
+            set
+            {
+                _canPaste = value; 
+                RaisePropertyChanged();
+            }
+        }
+
         public ICommand LogoutCommand { get; }
         public ICommand CopyCommand { get; }
         public ICommand CutCommand { get; }
@@ -81,6 +90,7 @@ namespace KlitechHf.ViewModels
         public ICommand UploadCommand { get; }
         public ICommand PasteCommand { get; }
         public ICommand PasteHereCommand { get; }
+        public ICommand NewFolderCommand { get; }
 
         public MainPageViewModel(DialogService dialogService)
         {
@@ -97,11 +107,25 @@ namespace KlitechHf.ViewModels
             OpenCommand = new DelegateCommand<DriveFolder>(OpenSelectedFolderAsync);
             NavigateUpCommand = new DelegateCommand(NavigateUpAsync);
             UploadCommand = new DelegateCommand(UploadAsync);
-            PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync, f => _drive.ClipBoard.CanExecute);
-            PasteHereCommand = new DelegateCommand(PasteHereAsync, () => _drive.ClipBoard.CanExecute);
+            PasteCommand = new DelegateCommand<DriveFolder>(PasteAsync).ObservesCanExecute(() => CanPaste);
+            PasteHereCommand = new DelegateCommand(PasteHereAsync).ObservesCanExecute(() => CanPaste);
+            NewFolderCommand = new DelegateCommand(CreateFolderAsync);
 
             IsLoading = false;
             _removeItemOnPaste = false;
+        }
+
+        private async void CreateFolderAsync()
+        {
+            var name = await _dialogService.ShowNameDialogAsync();
+            if (Children.Any(c => c.Name == name))
+            {
+                await _dialogService.ShowNameConflictErrorAsync();
+                return;
+            }
+
+            var folder = await _drive.CreateFolderAsync(CurrentFolder, name);
+            Children.InsertDriveItemSorted(folder);
         }
 
         private async void PasteHereAsync()
@@ -125,16 +149,17 @@ namespace KlitechHf.ViewModels
 
             try
             {
-                await _drive.PasteAsync(folder);
+                var item = await _drive.PasteAsync(folder);
+                if (CurrentFolder.Id == folder.Id)
+                {
+                    Children.InsertDriveItemSorted(item);
+                }
+
+                CanPaste = _drive.ClipBoard.CanExecute;
             }
             catch (TaskCanceledException)
             {
-                return;
-            }
-
-            if (CurrentFolder.Id == folder.Id)
-            {
-                await ReloadContentAsync();
+                // Catching the task cancellation exception
             }
         }
 
@@ -158,7 +183,8 @@ namespace KlitechHf.ViewModels
             foreach (var file in files)
             {
                 var content = await FileIO.ReadBufferAsync(file);
-                await _drive.UploadAsync(CurrentFolder, file.Name, content.ToArray());
+                var driveFile = await _drive.UploadAsync(CurrentFolder, file.Name, content.ToArray());
+                Children.InsertDriveItemSorted(driveFile);
             }
 
             await ReloadContentAsync();
@@ -211,7 +237,7 @@ namespace KlitechHf.ViewModels
 
         private async void RenameSelectedItemAsync(DriveItem item)
         {
-            var name = await _dialogService.ShowRenameDialogAsync();
+            var name = await _dialogService.ShowNameDialogAsync();
             if (name == null)
             {
                 return;
@@ -252,16 +278,20 @@ namespace KlitechHf.ViewModels
         {
             _removeItemOnPaste = false;
             _drive.Copy(item);
+            CanPaste = _drive.ClipBoard.CanExecute;
         }
 
         private void CutSelectedItem(DriveItem item)
         {
             _removeItemOnPaste = true;
             _drive.Cut(item);
+            CanPaste = _drive.ClipBoard.CanExecute;
+            
         }
 
         private async void Logout()
         {
+            CurrentUser = null;
             CurrentFolder = null;
             Children.Clear();
             AuthService.Instance.Logout();

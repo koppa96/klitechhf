@@ -29,30 +29,65 @@
     </Page.Resources>
     
     <Grid HorizontalAlignment="Stretch"
-          VerticalAlignment="Stretch">
+          VerticalAlignment="Stretch"
+          Padding="50">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="5*"/>
-            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="5*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0">
 
-        <TextBlock Text="{Binding CurrentFolder.Path, Mode=OneWay}"
-                   Grid.Row="0"
-                   Grid.Column="1"
-                   VerticalAlignment="Center"
-                   FontSize="18"/>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="{Binding CurrentFolder.Path, Mode=OneWay}"
+                       Grid.Row="0"
+                       VerticalAlignment="Center"
+                       FontSize="18"/>
+
+            <RelativePanel Grid.Row="1">
+
+                <Button x:Name="NewFolderButton"
+                        Command="{Binding NewFolderCommand}"
+                        RelativePanel.AlignLeftWithPanel="True"
+                        RelativePanel.AlignVerticalCenterWithPanel="True">
+                    <StackPanel Orientation="Horizontal" Padding="2">
+                        <SymbolIcon Symbol="Add"/>
+                        <TextBlock Margin="10 0 0 0" Text="Create folder"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Command="{Binding UploadCommand}"
+                        Margin="10 0 0 0"
+                        RelativePanel.RightOf="NewFolderButton"
+                        RelativePanel.AlignVerticalCenterWith="NewFolderButton">
+                    <StackPanel Orientation="Horizontal" Padding="2">
+                        <SymbolIcon Symbol="Upload"/>
+                        <TextBlock Margin="10 0 0 0" Text="Upload file"/>
+                    </StackPanel>
+                </Button>
+
+                <Button x:Name="PasteHereButton"
+                        Command="{Binding PasteHereCommand}"
+                        RelativePanel.AlignRightWithPanel="True"
+                        RelativePanel.AlignVerticalCenterWithPanel="True">
+                    <StackPanel Orientation="Horizontal" Padding="2">
+                        <SymbolIcon Symbol="Paste"/>
+                        <TextBlock Margin="10 0 0 0" Text="Paste here"/>
+                    </StackPanel>
+                </Button>
+
+            </RelativePanel>
+
+        </Grid>
 
         <ListView Name="ItemsListView" 
-                  ItemsSource="{Binding Children, Mode=OneWay}" 
+                  ItemsSource="{Binding Children}" 
                   ItemTemplateSelector="{StaticResource DriveItemTemplateSelector}"
                   Grid.Row="1"
-                  Grid.Column="1"
                   Visibility="{Binding IsLoading, Converter={StaticResource ListVisibilityConverter}}">
 
             <ListView.ItemContainerStyle>
@@ -64,19 +99,9 @@
         </ListView>
 
         <ProgressRing Grid.Row="1"
-                      Grid.Column="1"
                       Width="100"
                       Height="100"
                       IsActive="{Binding IsLoading}"/>
 
-        <Button Content="Logout"
-                Grid.Row="0"
-                Grid.Column="2"
-                Command="{Binding LogoutCommand}"/>
-
-        <Button Content="Upload"
-                Grid.Row="1"
-                Grid.Column="2"
-                Command="{Binding UploadCommand}"/>
     </Grid>
 </Page>

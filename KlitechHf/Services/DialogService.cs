@@ -4,18 +4,22 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace KlitechHf.Services
 {
     public class DialogService
     {
-        public async Task<string> ShowRenameDialogAsync()
+        public async Task<string> ShowNameDialogAsync()
         {
             var dialog = new ContentDialog
             {
                 Title = "Enter a name",
-                Content = new TextBox(),
+                Content = new TextBox
+                {
+                    VerticalContentAlignment = VerticalAlignment.Center
+                },
                 PrimaryButtonText = "Ok",
                 CloseButtonText = "Cancel"
             };
