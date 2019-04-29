@@ -21,14 +21,14 @@ namespace OneDriveServices.Drive.Model.Clipboard
         public IClipboardOperation Operation { get; set; }
         public bool CanExecute => Content != null && Operation != null;
 
-        public async Task ExecuteAsync(DriveFolder targetFolder)
+        public async Task<DriveItem> ExecuteAsync(DriveFolder targetFolder)
         {
             if (!CanExecute)
             {
-                return;
+                return null;
             }
 
-            await Operation.ExecuteAsync(Content, targetFolder);
+            return await Operation.ExecuteAsync(Content, targetFolder);
         }
 
         public void Clear()

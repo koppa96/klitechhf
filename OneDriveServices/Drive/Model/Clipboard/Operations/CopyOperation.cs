@@ -20,8 +20,8 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
         /// <param name="content">The item to be moved into the folder</param>
         /// <param name="target">The target folder</param>
         /// <exception cref="TaskCanceledException">Throws exception upon canceling the monitoring task</exception>
-        /// <returns>A task representing the operation</returns>
-        public async Task ExecuteAsync(DriveItem content, DriveFolder target)
+        /// <returns>The pasted item</returns>
+        public async Task<DriveItem> ExecuteAsync(DriveItem content, DriveFolder target)
         {
             using (var client = new HttpClient())
             {
@@ -54,14 +54,13 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
 
 
                     // Waiting for the copying to end
-                    await DriveService.AwaitOperationAsync(operationUri, tokenSource.Token);
+                    var result = await DriveService.AwaitOperationAsync(operationUri, tokenSource.Token);
 
                     // Removing the cancellation token as the operation already ended
                     DriveService.Instance.CurrentOperations.Remove(tokenSource);
 
                     // This results the item to be updated in the cache
-                    await DriveService.Instance.LoadItemAsync<DriveFolder>(target.Id);
-                    return;
+                    return await DriveService.Instance.GetItemAsync(result.ResourceId);
                 }
                 
                 throw new WebException(await response.Content.ReadAsStringAsync());

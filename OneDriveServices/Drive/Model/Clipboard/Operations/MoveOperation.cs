@@ -14,10 +14,10 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
         /// <summary>
         /// Moves the given item into the target folder, and also updates cache
         /// </summary>
-        /// <param name="content"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        public async Task ExecuteAsync(DriveItem content, DriveFolder target)
+        /// <param name="content">The item to be copied</param>
+        /// <param name="target">The target folder</param>
+        /// <returns>The pasted item</returns>
+        public async Task<DriveItem> ExecuteAsync(DriveItem content, DriveFolder target)
         {
             using (var client = new HttpClient())
             {
@@ -42,7 +42,7 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
                 if (response.IsSuccessStatusCode)
                 {
                     DriveService.Instance.Cache.MoveItem(content.Id, target.Id);
-                    return;
+                    return content;
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());

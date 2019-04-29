@@ -13,7 +13,7 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
         /// </summary>
         /// <param name="content">The subject of the operation</param>
         /// <param name="target">The target folder of the operation</param>
-        /// <returns></returns>
-        Task ExecuteAsync(DriveItem content, DriveFolder target);
+        /// <returns>The pasted item</returns>
+        Task<DriveItem> ExecuteAsync(DriveItem content, DriveFolder target);
     }
 }
