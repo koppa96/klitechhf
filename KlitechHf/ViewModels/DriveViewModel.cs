@@ -137,7 +137,7 @@ namespace KlitechHf.ViewModels
 
             var index = Children.IndexOf(item);
             Children.Remove(item);
-            Children.Insert(index, item);
+            Children.InsertDriveItemSorted(item);
         }
 
         public async Task LoadRootFolderAsync()
