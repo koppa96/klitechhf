@@ -211,7 +211,10 @@ namespace KlitechHf.ViewModels
 
         public override async void OnNavigatedTo(NavigatedToEventArgs e, Dictionary<string, object> viewModelState)
         {
-            await LoginAsync();
+            if (AuthService.Instance.CurrentUser == null)
+            {
+                await LoginAsync();
+            }
         }
 
         private async Task LoginAsync()
