@@ -17,11 +17,16 @@ namespace OneDriveServices.Authentication.Views
             this.InitializeComponent();
             if (DataContext is LoginDialogViewModel viewModel)
             {
+                // Navigates the WebView to the authorization endpoint's URL
                 viewModel.Initialize(this);
                 viewModel.LoginComplete += OnLoginComplete;
             }
         }
 
+        /// <summary>
+        /// Called when the login is complete. Hides the dialog and clears the cache of the WebView so it won't log in automatically next time.
+        /// </summary>
+        /// <param name="authCode">The authorization code obtained with the login</param>
         private async void OnLoginComplete(string authCode)
         {
             AuthCode = authCode;

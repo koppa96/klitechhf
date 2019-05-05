@@ -8,6 +8,9 @@ using Prism.Windows.Mvvm;
 
 namespace OneDriveServices.Authentication.ViewModels
 {
+    /// <summary>
+    /// A simple ViewModel for the Login dialog
+    /// </summary>
     public class LoginDialogViewModel : ViewModelBase
     {
         private readonly string _callbackUrl, _clientId, _baseUrl, _scopes;
@@ -26,6 +29,10 @@ namespace OneDriveServices.Authentication.ViewModels
             CheckUriCommand = new DelegateCommand<WebView>(OnWebViewNavigation);
         }
 
+        /// <summary>
+        /// Builds the url of the authorization endpoint and navigates the WebView of the dialog to it.
+        /// </summary>
+        /// <param name="dialog">The dialog</param>
         public void Initialize(ILoginDialog dialog)
         {
             var url = new Url(_baseUrl)
@@ -40,12 +47,16 @@ namespace OneDriveServices.Authentication.ViewModels
             dialog.NavigateWebView(url.ToUri());
         }
 
+        /// <summary>
+        /// Checks if the WebView is on the Redirect URI. If it is there it obtains the token from it.
+        /// </summary>
+        /// <param name="view">The WebView of the login dialog</param>
         public void OnWebViewNavigation(WebView view)
         {
             var url = new Url(view.Source.ToString());
             if (url.Path == _callbackUrl)
             {
-                var authCode = url.QueryParams["code"].ToString();
+                var authCode = url.QueryParams["code"]?.ToString();
                 LoginComplete?.Invoke(authCode);
             }
         }

@@ -2,6 +2,9 @@
 
 namespace OneDriveServices.Authentication.Model
 {
+    /// <summary>
+    /// Data class containing some information about the current user.
+    /// </summary>
     public class User
     {
         [JsonProperty("id")]
