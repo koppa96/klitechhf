@@ -6,6 +6,7 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using KlitechHf.Views;
 
 namespace KlitechHf.Services
 {
@@ -13,16 +14,10 @@ namespace KlitechHf.Services
     {
         public async Task<string> ShowNameDialogAsync()
         {
-            var dialog = new ContentDialog
-            {
-                Title = "Enter a name",
-                Content = new TextBox(),
-                PrimaryButtonText = "Ok",
-                CloseButtonText = "Cancel"
-            };
-
+            var dialog = new NameEnterDialog();
             var result = await dialog.ShowAsync();
-            return result == ContentDialogResult.Primary ? (dialog.Content as TextBox)?.Text : null;
+
+            return result == ContentDialogResult.Primary ? dialog.EnteredName : null;
         }
 
         public async Task<bool> ShowConfirmationDialogAsync(string message)
