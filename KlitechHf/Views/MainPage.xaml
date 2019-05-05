@@ -55,7 +55,7 @@
                           ItemTemplate="{StaticResource NavigationTemplate}"
                           ScrollViewer.HorizontalScrollMode="Enabled"
                           ScrollViewer.IsHorizontalRailEnabled="True"
-                          ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                           ScrollViewer.VerticalScrollMode="Disabled"
                           VerticalAlignment="Center"
                           Grid.Column="0">
