@@ -53,12 +53,17 @@
 
                 <ListView ItemsSource="{Binding NavigationViewModel.NavigationItems}"
                           ItemTemplate="{StaticResource NavigationTemplate}"
+                          ScrollViewer.HorizontalScrollMode="Enabled"
+                          ScrollViewer.IsHorizontalRailEnabled="True"
+                          ScrollViewer.HorizontalScrollBarVisibility="Visible"
+                          ScrollViewer.VerticalScrollMode="Disabled"
                           VerticalAlignment="Center"
                           Grid.Column="0">
 
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"/>
+                            <ItemsStackPanel Orientation="Horizontal"
+                                             ItemsUpdatingScrollMode="KeepLastItemInView"/>
                         </ItemsPanelTemplate>
                     </ListView.ItemsPanel>
 
