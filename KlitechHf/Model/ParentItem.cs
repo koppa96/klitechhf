@@ -8,7 +8,7 @@ using OneDriveServices.Drive.Model.DriveItems;
 namespace KlitechHf.Model
 {
     /// <summary>
-    /// An item that represents the navigate element in the list.
+    /// An item that represents a reference to the parent of the current folder.
     /// </summary>
     public class ParentItem : DriveItem
     {

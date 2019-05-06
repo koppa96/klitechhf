@@ -8,9 +8,13 @@
     xmlns:ic="using:Microsoft.Xaml.Interactions.Core"
     xmlns:convert="using:KlitechHf.Converters"
     x:Class="KlitechHf.Resources.DataTemplates">
+    <!--This file contains the data templates used to display DriveItems and navigation elements.
+        I couldn't find any method to bind to the parent item's DataContext so I used the ElementName
+        to achieve binding to the commands of the MainPage's ViewModel.-->
 
     <convert:FileSizeConverter x:Key="FileSizeConverter"/>
 
+    <!--Data template for NavigationItems-->
     <DataTemplate x:Key="NavigationTemplate" x:DataType="m:NavigationItem">
         <StackPanel Orientation="Horizontal" Padding="10 0 10 0">
             <TextBlock Text="{Binding Name}" FontSize="20"/>
@@ -23,6 +27,7 @@
         </StackPanel>
     </DataTemplate>
 
+    <!--Data template for DriveFiles-->
     <DataTemplate x:Key="FileTemplate" x:DataType="driveItems:DriveFile">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
@@ -71,6 +76,7 @@
         </Grid>
     </DataTemplate>
 
+    <!--Data template for DriveFolders-->
     <DataTemplate x:Key="FolderTemplate" x:DataType="driveItems:DriveFolder">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
@@ -115,6 +121,7 @@
         </Grid>
     </DataTemplate>
 
+    <!--Data template for ParentItems-->
     <DataTemplate x:Key="ParentTemplate" x:DataType="m:ParentItem">
         <Grid HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>

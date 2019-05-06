@@ -10,6 +10,9 @@ using OneDriveServices.Authentication.Model;
 
 namespace KlitechHf.ViewModels
 {
+    /// <summary>
+    /// A ViewModel for the display of the current user's data.
+    /// </summary>
     public class UserViewModel : INotifyPropertyChanged
     {
         private User _currentUser;

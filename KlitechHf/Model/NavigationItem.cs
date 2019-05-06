@@ -7,6 +7,9 @@ using OneDriveServices.Drive.Model.DriveItems;
 
 namespace KlitechHf.Model
 {
+    /// <summary>
+    /// An item for the navigation list. It holds its DriveItem's ID and Name for navigation purposes.
+    /// </summary>
     public class NavigationItem
     {
         public string Name { get; set; }
@@ -14,7 +17,6 @@ namespace KlitechHf.Model
 
         public NavigationItem()
         {
-
         }
 
         public NavigationItem(DriveItem item)

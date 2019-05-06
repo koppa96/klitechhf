@@ -18,6 +18,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace KlitechHf.Views
 {
+    /// <summary>
+    /// A simple dialog with a TextBox used to obtain a name from the user.
+    /// </summary>
     public sealed partial class NameEnterDialog : ContentDialog
     {
         public string EnteredName { get; set; }

@@ -7,6 +7,9 @@ using Windows.UI.Xaml.Data;
 
 namespace KlitechHf.Converters
 {
+    /// <summary>
+    /// One way converter for converting file sizes in bytes into more readable formats.
+    /// </summary>
     public class FileSizeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)

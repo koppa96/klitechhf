@@ -11,6 +11,9 @@ using OneDriveServices.Drive.Model.DriveItems;
 
 namespace KlitechHf.Utility
 {
+    /// <summary>
+    /// Selects an ItemTemplate for a displayable item in the Drive ListView
+    /// </summary>
     public class DriveItemTemplateSelector : DataTemplateSelector
     {
         public DataTemplate FileTemplate { get; set; }

@@ -10,8 +10,15 @@ using KlitechHf.Views;
 
 namespace KlitechHf.Services
 {
+    /// <summary>
+    /// A service used for setting up and showing interaction dialogs for the user.
+    /// </summary>
     public class DialogService
     {
+        /// <summary>
+        /// Shows a name enter dialog asynchronously and returns the entered name by the user or null if canceled.
+        /// </summary>
+        /// <returns>The name entered by the user</returns>
         public async Task<string> ShowNameDialogAsync()
         {
             var dialog = new NameEnterDialog();
@@ -20,6 +27,11 @@ namespace KlitechHf.Services
             return result == ContentDialogResult.Primary ? dialog.EnteredName : null;
         }
 
+        /// <summary>
+        /// Shows a confirmation dialog with the given message asynchronously.
+        /// </summary>
+        /// <param name="message">The message of the dialog</param>
+        /// <returns>The response of the user</returns>
         public async Task<bool> ShowConfirmationDialogAsync(string message)
         {
             var dialog = new ContentDialog
@@ -34,6 +46,10 @@ namespace KlitechHf.Services
             return result == ContentDialogResult.Primary;
         }
 
+        /// <summary>
+        /// Shows a file picker dialog asynchronously.
+        /// </summary>
+        /// <returns>The files selected by the user</returns>
         public async Task<IEnumerable<StorageFile>> ShowFilePickerAsync()
         {
             var filePicker = new FileOpenPicker();
@@ -42,6 +58,10 @@ namespace KlitechHf.Services
             return await filePicker.PickMultipleFilesAsync();
         }
 
+        /// <summary>
+        /// Shows a folder picker dialog asynchronously.
+        /// </summary>
+        /// <returns>The folder selected by the user</returns>
         public async Task<StorageFolder> ShowFolderPickerAsync()
         {
             var folderPicker = new FolderPicker();
@@ -50,6 +70,10 @@ namespace KlitechHf.Services
             return await folderPicker.PickSingleFolderAsync();
         }
 
+        /// <summary>
+        /// Shows a dialog that informs the user about a name conflict at copying/renaming/uploading.
+        /// </summary>
+        /// <returns>A task representing the operation</returns>
         public async Task ShowNameConflictErrorAsync()
         {
             var dialog = new ContentDialog

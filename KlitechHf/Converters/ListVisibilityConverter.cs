@@ -8,6 +8,9 @@ using Windows.UI.Xaml.Data;
 
 namespace KlitechHf.Converters
 {
+    /// <summary>
+    /// Converts boolean to visibility. If the boolean is true the visibility will be collapsed, visible otherwise.
+    /// </summary>
     public class ListVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, string language)
