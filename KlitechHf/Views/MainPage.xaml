@@ -69,36 +69,42 @@
 
                 </ListView>
 
-                <RelativePanel Grid.Column="1">
-                    <Viewbox x:Name="ProfileIcon"
-                             RelativePanel.AlignVerticalCenterWithPanel="True"
-                             MaxWidth="40"
-                             MaxHeight="40">
-                        <SymbolIcon Symbol="Contact"/>
-                    </Viewbox>
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                    <TextBlock x:Name="NameTextBlock"
-                               Margin="10 0 0 0"
-                               RelativePanel.AlignTopWith="ProfileIcon"
-                               RelativePanel.RightOf="ProfileIcon"
-                               Text="{Binding UserViewModel.CurrentUser.DisplayName}"/>
+                    <RelativePanel Grid.Column="0">
+                        <Viewbox x:Name="ProfileIcon"
+                                 RelativePanel.AlignVerticalCenterWithPanel="True"
+                                 MaxWidth="40"
+                                 MaxHeight="40">
+                            <SymbolIcon Symbol="Contact"/>
+                        </Viewbox>
 
-                    <TextBlock x:Name="EmailTextBlock"
-                               Margin="10 0 0 0"
-                               RelativePanel.AlignLeftWith="NameTextBlock"
-                               RelativePanel.Below="NameTextBlock"
-                               Text="{Binding UserViewModel.CurrentUser.Email}"/>
+                        <TextBlock x:Name="NameTextBlock"
+                                   Margin="10 0 0 0"
+                                   RelativePanel.AlignTopWith="ProfileIcon"
+                                   RelativePanel.RightOf="ProfileIcon"
+                                   Text="{Binding UserViewModel.CurrentUser.DisplayName}"/>
+
+                        <TextBlock x:Name="EmailTextBlock"
+                                   Margin="10 0 0 0"
+                                   RelativePanel.AlignLeftWith="NameTextBlock"
+                                   RelativePanel.Below="NameTextBlock"
+                                   Text="{Binding UserViewModel.CurrentUser.Email}"/>
+                    </RelativePanel>
 
                     <Button x:Name="LogoutButton"
-                            RelativePanel.AlignRightWithPanel="True"
-                            RelativePanel.AlignVerticalCenterWithPanel="True"
+                            Grid.Column="1"
                             Command="{Binding LogoutCommand}">
                         <StackPanel Orientation="Horizontal" Padding="2">
                             <SymbolIcon Symbol="BlockContact"/>
                             <TextBlock Margin="10 0 0 0" Text="Log out"/>
                         </StackPanel>
                     </Button>
-                </RelativePanel>
+                </Grid>
 
             </Grid>
 
