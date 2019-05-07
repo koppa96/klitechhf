@@ -65,7 +65,7 @@ namespace OneDriveServices.Drive
         /// Tries to get the root folder of the drive from the cache. If it doesn't exist it will be loaded from the server.
         /// </summary>
         /// <returns>The root folder of the drive</returns>
-        public async Task<DriveFolder> GetRootAsync()
+        public async Task<DriveFolder> GetRootAsync(bool isRetrying = false)
         {
             var cachedFolder = Cache.GetRootFolder();
             if (cachedFolder != null)
@@ -91,6 +91,13 @@ namespace OneDriveServices.Drive
                     DriveId = root.Parent.DriveId;
 
                     return root;
+                }
+
+                // Retrying once more after obtaining a new access token if the token may expired
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await GetRootAsync(true);
                 }
 
                 throw new WebException("Couldn't get the root folder.");
@@ -125,7 +132,7 @@ namespace OneDriveServices.Drive
         /// </summary>
         /// <param name="id">The identifier of the item</param>
         /// <returns>The item</returns>
-        public async Task<DriveItem> LoadItemAsync(string id)
+        public async Task<DriveItem> LoadItemAsync(string id, bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -149,6 +156,12 @@ namespace OneDriveServices.Drive
                     return item;
                 }
 
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await LoadItemAsync(id, true);
+                }
+
                 throw new WebException(await response.Content.ReadAsStringAsync());
             }
         }
@@ -159,7 +172,7 @@ namespace OneDriveServices.Drive
         /// <typeparam name="T">The type of the desired DriveItem</typeparam>
         /// <param name="id">The identifier of the item</param>
         /// <returns></returns>
-        public async Task<T> LoadItemAsync<T>(string id) where T : DriveItem
+        public async Task<T> LoadItemAsync<T>(string id, bool isRetrying = false) where T : DriveItem
         {
             using (var client = new HttpClient())
             {
@@ -179,6 +192,12 @@ namespace OneDriveServices.Drive
                     return item;
                 }
 
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await LoadItemAsync<T>(id, true);
+                }
+
                 throw new WebException(await response.Content.ReadAsStringAsync());
             }
         }
@@ -189,7 +208,7 @@ namespace OneDriveServices.Drive
         /// <param name="parent">The parent of the newly created folder</param>
         /// <param name="name">The name of the folder to be created</param>
         /// <returns></returns>
-        public async Task<DriveFolder> CreateFolderAsync(DriveFolder parent, string name)
+        public async Task<DriveFolder> CreateFolderAsync(DriveFolder parent, string name, bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -217,6 +236,12 @@ namespace OneDriveServices.Drive
                     return folder;
                 }
 
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await CreateFolderAsync(parent, name, true);
+                }
+
                 throw new WebException(await response.Content.ReadAsStringAsync());
             }
         }
@@ -228,7 +253,7 @@ namespace OneDriveServices.Drive
         /// <param name="filename">The name of the file</param>
         /// <param name="content">The content of the file</param>
         /// <returns>The uploaded file</returns>
-        public async Task<DriveFile> UploadAsync(DriveFolder parent, string filename, byte[] content)
+        public async Task<DriveFile> UploadAsync(DriveFolder parent, string filename, byte[] content, bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -258,6 +283,12 @@ namespace OneDriveServices.Drive
 
                     // Sending the last chunk and returning its result
                     return await SendLastChunkAsync(client, uploadUrl, content, i);
+                }
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await UploadAsync(parent, filename, content, true);
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());

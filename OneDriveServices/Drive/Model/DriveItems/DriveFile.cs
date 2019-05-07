@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Flurl;
@@ -16,7 +17,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// Asynchronously downloads the file.
         /// </summary>
         /// <returns>The bytes of the file</returns>
-        public async Task<byte[]> DownloadAsync()
+        public async Task<byte[]> DownloadAsync(bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -30,6 +31,12 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 if (response.IsSuccessStatusCode)
                 {
                     return await response.Content.ReadAsByteArrayAsync();
+                }
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await DownloadAsync(true);
                 }
 
                 throw new InvalidOperationException();

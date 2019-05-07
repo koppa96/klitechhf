@@ -47,7 +47,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// Deletes the item from the drive and removes itself from the cache.
         /// </summary>
         /// <returns>A task representing the asynchronous operation</returns>
-        public async Task DeleteAsync()
+        public async Task DeleteAsync(bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -58,14 +58,22 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
 
                 var response = await Task.Run(() => client.SendAsync(request));
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    throw new WebException(await response.Content.ReadAsStringAsync());
+                    //Reload the parent into the cache
+                    await DriveService.Instance.LoadItemAsync<DriveFolder>(Parent.Id);
+                    DriveService.Instance.Cache.RemoveItem(Id);
+                    return;
                 }
 
-                //Reload the parent into the cache
-                await DriveService.Instance.LoadItemAsync<DriveFolder>(Parent.Id);
-                DriveService.Instance.Cache.RemoveItem(Id);
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    await DeleteAsync(true);
+                    return;
+                }
+
+                throw new WebException(await response.Content.ReadAsStringAsync());
             }
         }
 
@@ -74,7 +82,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// </summary>
         /// <param name="newName">The new name of the item</param>
         /// <returns>A task representing the operation</returns>
-        public async Task RenameAsync(string newName)
+        public async Task RenameAsync(string newName, bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -95,7 +103,17 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     Update(json);
+                    return;
                 }
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    await RenameAsync(newName, true);
+                    return;
+                }
+
+                throw new WebException(await response.Content.ReadAsStringAsync());
             }
         }
 

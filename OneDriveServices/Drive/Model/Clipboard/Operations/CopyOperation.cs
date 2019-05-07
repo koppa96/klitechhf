@@ -21,7 +21,7 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
         /// <param name="target">The target folder</param>
         /// <exception cref="TaskCanceledException">Throws exception upon canceling the monitoring task</exception>
         /// <returns>The pasted item</returns>
-        public async Task<DriveItem> ExecuteAsync(DriveItem content, DriveFolder target)
+        public async Task<DriveItem> ExecuteAsync(DriveItem content, DriveFolder target, bool isRetrying)
         {
             using (var client = new HttpClient())
             {
@@ -64,6 +64,12 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
 
                     // This results the item to be updated in the cache
                     return await DriveService.Instance.GetItemAsync(result.ResourceId);
+                }
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await ExecuteAsync(content, target, true);
                 }
                 
                 throw new WebException(await response.Content.ReadAsStringAsync());

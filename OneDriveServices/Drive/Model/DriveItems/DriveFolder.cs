@@ -34,7 +34,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// Loads the children of the item from the server and adds the downloaded items to the cache.
         /// </summary>
         /// <returns>The list of children of the item</returns>
-        public async Task<List<DriveItem>> LoadChildrenAsync()
+        public async Task<List<DriveItem>> LoadChildrenAsync(bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -59,6 +59,12 @@ namespace OneDriveServices.Drive.Model.DriveItems
                     }
                     
                     return childList;
+                }
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
+                {
+                    await AuthService.Instance.LoginAsync();
+                    return await LoadChildrenAsync(true);
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());
