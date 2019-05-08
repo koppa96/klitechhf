@@ -64,6 +64,7 @@ namespace OneDriveServices.Drive
         /// <summary>
         /// Tries to get the root folder of the drive from the cache. If it doesn't exist it will be loaded from the server.
         /// </summary>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns>The root folder of the drive</returns>
         public async Task<DriveFolder> GetRootAsync(bool isRetrying = false)
         {
@@ -131,6 +132,7 @@ namespace OneDriveServices.Drive
         /// Loads the desired item from the server if the type of the item is not known
         /// </summary>
         /// <param name="id">The identifier of the item</param>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns>The item</returns>
         public async Task<DriveItem> LoadItemAsync(string id, bool isRetrying = false)
         {
@@ -171,6 +173,7 @@ namespace OneDriveServices.Drive
         /// </summary>
         /// <typeparam name="T">The type of the desired DriveItem</typeparam>
         /// <param name="id">The identifier of the item</param>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns></returns>
         public async Task<T> LoadItemAsync<T>(string id, bool isRetrying = false) where T : DriveItem
         {
@@ -207,6 +210,7 @@ namespace OneDriveServices.Drive
         /// </summary>
         /// <param name="parent">The parent of the newly created folder</param>
         /// <param name="name">The name of the folder to be created</param>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns></returns>
         public async Task<DriveFolder> CreateFolderAsync(DriveFolder parent, string name, bool isRetrying = false)
         {
@@ -250,10 +254,11 @@ namespace OneDriveServices.Drive
         /// Uploads a file with the given name and the given content to the current folder
         /// </summary>
         /// <param name="parent">The parent folder of the new file</param>
-        /// <param name="filename">The name of the file</param>
-        /// <param name="content">The content of the file</param>
+        /// <param name="filename">The name of the newly created file</param>
+        /// <param name="file">The StorageFile to be uploaded</param>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns>The uploaded file</returns>
-        public async Task<DriveFile> UploadAsync(DriveFolder parent, string filename, byte[] content, bool isRetrying = false)
+        public async Task<DriveFile> UploadAsync(DriveFolder parent, string filename, StorageFile file, bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -270,25 +275,39 @@ namespace OneDriveServices.Drive
                     var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
                     var uploadUrl = obj["uploadUrl"].ToString();
 
-                    // Calculating the amount of chunks to be sent
-                    var intermediateChunks = content.Length % ChunkSize == 0 ? 
-                        content.Length / ChunkSize - 1 : content.Length / ChunkSize;
-
-                    // Sending all the intermediate chunk
-                    int i;
-                    for (i = 0; i < intermediateChunks; i++)
+                    // Opening an input stream so the whole file does not need to be loaded into the memory
+                    using (var stream = await file.OpenStreamForReadAsync())
                     {
-                        await SendChunkAsync(client, uploadUrl, content, i);
-                    }
+                        // Calculating the amount of chunks to be sent
+                        var intermediateChunks = stream.Length % ChunkSize == 0 ?
+                            stream.Length / ChunkSize - 1 : stream.Length / ChunkSize;
 
-                    // Sending the last chunk and returning its result
-                    return await SendLastChunkAsync(client, uploadUrl, content, i);
+                        // Sending all the intermediate chunks
+                        int i;
+                        for (i = 0; i < intermediateChunks; i++)
+                        {
+                            var bytes = new byte[ChunkSize];
+                            
+                            // Reading 60 MB from the file (Chunk size)
+                            await stream.ReadAsync(bytes, i * ChunkSize, ChunkSize);
+
+                            // Sending the chunk
+                            await SendChunkAsync(client, uploadUrl, bytes, i, stream.Length);
+                        }
+
+                        var lastBytes = new byte[stream.Length - i * ChunkSize];
+                        // Reading the remaining bytes from the file
+                        await stream.ReadAsync(lastBytes, i * ChunkSize, (int)stream.Length - i * ChunkSize);
+                        
+                        // Sending the last chunk and returning its result
+                        return await SendLastChunkAsync(client, uploadUrl, lastBytes, i, stream.Length);
+                    }
                 }
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
                 {
                     await AuthService.Instance.LoginAsync();
-                    return await UploadAsync(parent, filename, content, true);
+                    return await UploadAsync(parent, filename, file, true);
                 }
 
                 throw new WebException(await response.Content.ReadAsStringAsync());
@@ -302,12 +321,13 @@ namespace OneDriveServices.Drive
         /// <param name="uploadUrl">The target URL</param>
         /// <param name="content">The content to be sent</param>
         /// <param name="offset">The offset of the sent bytes</param>
+        /// <param name="length">The total length of the file from which the chunk is uploaded</param>
         /// <returns>A task representing the operation</returns>
-        private async Task SendChunkAsync(HttpClient client, string uploadUrl, byte[] content, int offset)
+        private async Task SendChunkAsync(HttpClient client, string uploadUrl, byte[] content, long offset, long length)
         {
             var uploadRequest = new HttpRequestMessage(HttpMethod.Put, uploadUrl);
-            uploadRequest.Content = new ByteArrayContent(content, offset * ChunkSize, ChunkSize);
-            uploadRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(offset * ChunkSize, (offset + 1) * ChunkSize - 1, content.Length);
+            uploadRequest.Content = new ByteArrayContent(content);
+            uploadRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(offset * ChunkSize, (offset + 1) * ChunkSize - 1, length);
 
             var uploadResponse = await Task.Run(() => client.SendAsync(uploadRequest));
             if (!uploadResponse.IsSuccessStatusCode)
@@ -323,12 +343,13 @@ namespace OneDriveServices.Drive
         /// <param name="uploadUrl">The target URL</param>
         /// <param name="content">The content to be sent</param>
         /// <param name="offset">The offset of the sent bytes</param>
+        /// <param name="length">The total length of the file from which the bytes are uploaded</param>
         /// <returns>The uploaded file</returns>
-        private async Task<DriveFile> SendLastChunkAsync(HttpClient client, string uploadUrl, byte[] content, int offset)
+        private async Task<DriveFile> SendLastChunkAsync(HttpClient client, string uploadUrl, byte[] content, long offset, long length)
         {
             var lastRequest = new HttpRequestMessage(HttpMethod.Put, uploadUrl);
-            lastRequest.Content = new ByteArrayContent(content, offset * ChunkSize, content.Length - offset * ChunkSize);
-            lastRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(offset * ChunkSize, content.Length - 1, content.Length);
+            lastRequest.Content = new ByteArrayContent(content);
+            lastRequest.Content.Headers.ContentRange = new ContentRangeHeaderValue(offset * ChunkSize, length - 1, length);
 
             var lastResponse = await Task.Run(() => client.SendAsync(lastRequest));
             if (lastResponse.IsSuccessStatusCode)

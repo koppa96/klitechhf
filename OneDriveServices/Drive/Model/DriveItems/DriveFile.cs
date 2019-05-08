@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Windows.Storage;
 using Flurl;
 using Newtonsoft.Json;
 using OneDriveServices.Authentication;
@@ -16,8 +18,10 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// <summary>
         /// Asynchronously downloads the file.
         /// </summary>
+        /// <param name="file">The target StorageFile into which the content will be downloaded</param>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns>The bytes of the file</returns>
-        public async Task<byte[]> DownloadAsync(bool isRetrying = false)
+        public async Task DownloadAsync(StorageFile file, bool isRetrying = false)
         {
             using (var client = new HttpClient())
             {
@@ -27,16 +31,23 @@ namespace OneDriveServices.Drive.Model.DriveItems
                 var request = new HttpRequestMessage(HttpMethod.Get, url.ToUri());
                 request.Headers.Authorization = AuthService.Instance.CreateAuthenticationHeader();
 
-                var response = await Task.Run(() => client.SendAsync(request));
+                var response = await Task.Run(() => client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead));
                 if (response.IsSuccessStatusCode)
                 {
-                    return await response.Content.ReadAsByteArrayAsync();
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    {
+                        using (var outputStream = await file.OpenStreamForWriteAsync())
+                        {
+                            await stream.CopyToAsync(outputStream);
+                            return;
+                        }
+                    }
                 }
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized && !isRetrying)
                 {
                     await AuthService.Instance.LoginAsync();
-                    return await DownloadAsync(true);
+                    await DownloadAsync(file, true);
                 }
 
                 throw new InvalidOperationException();
