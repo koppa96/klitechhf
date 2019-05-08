@@ -33,6 +33,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// <summary>
         /// Loads the children of the item from the server and adds the downloaded items to the cache.
         /// </summary>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns>The list of children of the item</returns>
         public async Task<List<DriveItem>> LoadChildrenAsync(bool isRetrying = false)
         {

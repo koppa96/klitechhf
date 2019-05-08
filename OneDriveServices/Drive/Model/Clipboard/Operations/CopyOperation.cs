@@ -19,6 +19,7 @@ namespace OneDriveServices.Drive.Model.Clipboard.Operations
         /// </summary>
         /// <param name="content">The item to be moved into the folder</param>
         /// <param name="target">The target folder</param>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <exception cref="TaskCanceledException">Throws exception upon canceling the monitoring task</exception>
         /// <returns>The pasted item</returns>
         public async Task<DriveItem> ExecuteAsync(DriveItem content, DriveFolder target, bool isRetrying)

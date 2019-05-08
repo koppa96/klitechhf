@@ -46,6 +46,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// <summary>
         /// Deletes the item from the drive and removes itself from the cache.
         /// </summary>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns>A task representing the asynchronous operation</returns>
         public async Task DeleteAsync(bool isRetrying = false)
         {
@@ -81,6 +82,7 @@ namespace OneDriveServices.Drive.Model.DriveItems
         /// Renames the item on the server and updates its data locally.
         /// </summary>
         /// <param name="newName">The new name of the item</param>
+        /// <param name="isRetrying">Determines if the method is retrying after an unauthorized response</param>
         /// <returns>A task representing the operation</returns>
         public async Task RenameAsync(string newName, bool isRetrying = false)
         {
