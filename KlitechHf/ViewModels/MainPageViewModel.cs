@@ -64,7 +64,7 @@ namespace KlitechHf.ViewModels
 
         public MainPageViewModel(DialogService dialogService)
         {
-            DriveViewModel = new DriveViewModel();
+            DriveViewModel = new DriveViewModel(dialogService);
             CurrentTasks = new TaskViewModel();
             NavigationViewModel = new NavigationViewModel();
             UserViewModel = new UserViewModel();

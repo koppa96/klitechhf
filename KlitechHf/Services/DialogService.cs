@@ -85,5 +85,23 @@ namespace KlitechHf.Services
 
             await dialog.ShowAsync();
         }
+
+        /// <summary>
+        /// Informs the user that there is a name conflict. It offers to enter a new name for the downloaded file.
+        /// </summary>
+        /// <returns>The new name of the file</returns>
+        public async Task<string> ShowDownloadNameConflictErrorAsync()
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Error",
+                Content = "The target folder contains a file with this name. Please enter a new name for the file.",
+                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Ok"
+            };
+
+            var result = await dialog.ShowAsync();
+            return result == ContentDialogResult.Primary ? await ShowNameDialogAsync() : null;
+        }
     }
 }

@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Windows.Storage;
 using KlitechHf.Annotations;
 using KlitechHf.Model;
+using KlitechHf.Services;
 using KlitechHf.Utility;
 using OneDriveServices.Drive;
 using OneDriveServices.Drive.Model.DriveItems;
@@ -26,6 +27,7 @@ namespace KlitechHf.ViewModels
         private ObservableCollection<DriveItem> _children;
         private bool _removeItemOnPaste;
         private DriveService _drive;
+        private DialogService _dialogService;
 
         public DriveFolder CurrentFolder { get; set; }
 
@@ -45,9 +47,10 @@ namespace KlitechHf.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public DriveViewModel()
+        public DriveViewModel(DialogService dialogService)
         {
             _drive = DriveService.Instance;
+            _dialogService = dialogService;
             _removeItemOnPaste = false;
             Children = new ObservableCollection<DriveItem>();
         }
@@ -106,8 +109,7 @@ namespace KlitechHf.ViewModels
         {
             foreach (var file in files)
             {
-                var content = await FileIO.ReadBufferAsync(file);
-                var driveFile = await _drive.UploadAsync(CurrentFolder, file.Name, content.ToArray());
+                var driveFile = await _drive.UploadAsync(CurrentFolder, file.Name, file);
                 Children.InsertDriveItemSorted(driveFile);
             }
         }
@@ -162,9 +164,31 @@ namespace KlitechHf.ViewModels
         /// <returns>A task representing the operation</returns>
         public async Task DownloadFileAsync(DriveFile file, StorageFolder folder)
         {
-            var storageFile = await folder.CreateFileAsync(file.Name);
-            var content = await file.DownloadAsync();
-            await FileIO.WriteBytesAsync(storageFile, content);
+            var storageFile = await CreateLocalFileAsync(file.Name, folder);
+            if (storageFile != null)
+            {
+                await file.DownloadAsync(storageFile);
+            }
+        }
+
+        private async Task<StorageFile> CreateLocalFileAsync(string fileName, StorageFolder folder)
+        {
+            StorageFile file = null;
+
+            try
+            {
+                file = await folder.CreateFileAsync(fileName);
+            }
+            catch (Exception)
+            {
+                var newName = await _dialogService.ShowDownloadNameConflictErrorAsync();
+                if (newName != null)
+                {
+                    file = await CreateLocalFileAsync(newName, folder);
+                }
+            }
+
+            return file;
         }
 
         /// <summary>
