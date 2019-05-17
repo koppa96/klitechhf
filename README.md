@@ -22,34 +22,34 @@ I did not implement further features of the API as they were not necessary for t
 
 ### Samples
 After logging in you can access the logged in user's drive. You can get the root folder of the drive like this:
-```
+```C#
 DriveFolder rootFolder = await DriveService.Instance.GetRootAsync();
 ```
 
 You can then list the children of your folder like this:
-```
+```C#
 List<DriveItem> children = await rootFolder.GetChildrenAsync(); // Gets the children from the cache if they are in there
 children = await rootFolder.LoadChildrenAsync(); // Force-loads the children from the server if you don't want to use cache
 ```
 
 You can also get an item with a specific ID:
-```
+```C#
 DriveFile file = await DriveService.Instance.GetItemAsync<DriveFile>("FILE_ID"); // You can force-load from server by LoadItemAsync<>()
 ```
 
 If you want to download a file you just have to do this:
-```
+```C#
 byte[] content = await file.DownloadAsync();
 ```
 
 To delete an item do this:
-```
+```C#
 DriveItem item = await DriveService.Instance.GetItemAsync("ITEM_ID");
 await item.DeleteAsync(); //This removes the file both from your drive and the local cache
 ```
 
 To rename an item do this:
-```
+```C#
 await item.RenameAsync("NewName.txt");
 ```
 
